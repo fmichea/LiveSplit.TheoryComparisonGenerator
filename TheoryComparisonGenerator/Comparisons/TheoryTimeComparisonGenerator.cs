@@ -41,7 +41,7 @@ namespace LiveSplit.TheoryComparisonGenerator.Comparisons
 			if (target == null) return;
 
 			// Variable multiplier is the amount we need to multiple every gold to get theory split time.
-			//   eg. Gold = 1:00 (60000000ms), Theory = 1:10 (70000000ms) => Multiplier 1.1666... (aka. 116 %)
+			//   eg. Gold = 1:00 (60000ms), Theory = 1:10 (70000ms) => Multiplier 1.1666... (aka. 116 %)
 			var goldMultiplier = target.Value.TotalMilliseconds / sob.Value.TotalMilliseconds;
 
 			// For each segment in the run, find the split time for this segment using the multiplier.
