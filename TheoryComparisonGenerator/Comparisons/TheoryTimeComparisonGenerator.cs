@@ -13,81 +13,58 @@ namespace LiveSplit.TheoryComparisonGenerator.Comparisons
 			Target = target;
 		}
 
+		public Time Target { get; set; }
+
 		public IRun Run { get; set; }
 
-		public virtual string Name
-		{
-			get
-			{
-				// FIXME: Handle timing method selection for title.
-				return String.Format("Theory {0}", Target.RealTime.Value.ToString());
-			}
-		}
-
-		public Time Target { get; set; }
+		public virtual string Name =>
+			// FIXME: Handle timing method selection for title.
+			string.Format("Theory {0}", Target.RealTime.Value.ToString());
 
 		public virtual void Generate(ISettings settings)
 		{
-			// FIXME: Make a sub function that takes the timing method and computes the correct value,
-			//  call it from this function with both available methods.
+			Generate(TimingMethod.RealTime);
+			Generate(TimingMethod.GameTime);
+		}
 
-			var last_segment_times = new Time(TimeSpan.Zero, TimeSpan.Zero);
-			double sob_ms;
-			double sob_ms_igt;
-			try
+		public void Generate(TimingMethod method)
+		{
+			// Variable theorySplitTime represents the time at which the segment will have to be split.
+			var theorySplitTime = TimeSpan.Zero;
+
+			// For this comparison, we need a full sum of best available to base calculation on.
+			var sob = SumOfBest.CalculateSumOfBest(Run, method: method);
+			if (sob == null) return;
+
+			// Target time must also be available.
+			var target = Target[method];
+			if (target == null) return;
+
+			// Variable multiplier is the amount we need to multiple every gold to get theory split time.
+			//   eg. Gold = 1:00 (60000000ms), Theory = 1:10 (70000000ms) => Multiplier 1.1666... (aka. 116 %)
+			var goldMultiplier = target.Value.TotalMilliseconds / sob.Value.TotalMilliseconds;
+
+			// For each segment in the run, find the split time for this segment using the multiplier.
+			for (var idx = 0; idx < Run.Count; idx++)
 			{
-				sob_ms = SumOfBest.CalculateSumOfBest(Run).Value.TotalMilliseconds;
-			}
-			catch
-			{
-				sob_ms = 0;
-			}
+				// Fetch the segment gold, this should never fail since we already computed the SOB.
+				var gold = Run[idx].BestSegmentTime[method];
+				if (gold == null) continue;
 
-			try
-			{
-				sob_ms_igt = SumOfBest.CalculateSumOfBest(Run, method: TimingMethod.GameTime).Value
-					.TotalMilliseconds;
-			}
-			catch
-			{
-				sob_ms_igt = 0;
-			}
+				// Variable theorySegmentTime is the expected segment duration for theory.
+				var theorySegmentTime = gold.Value.TotalMilliseconds * goldMultiplier;
 
-			for (var ind = 0; ind < Run.Count; ind++)
-			{
-				double realTime;
-				double igt;
-				try
-				{
-					realTime = Run[ind].BestSegmentTime.RealTime.Value.TotalMilliseconds +
-					           (Target.RealTime.Value.TotalMilliseconds - sob_ms) *
-					           (Run[ind].BestSegmentTime.RealTime.Value.TotalMilliseconds / sob_ms);
-				}
-				catch
-				{
-					realTime = 0;
-				}
+				// Variable theorySplitTime is the cumulative time to the end of this segment from run
+				// start, in other words the deadline by which to split this segment.
+				theorySplitTime += TimeSpan.FromMilliseconds(theorySegmentTime);
 
-				try
-				{
-					igt = Run[ind].BestSegmentTime.GameTime.Value.TotalMilliseconds +
-					      (Target.GameTime.Value.TotalMilliseconds - sob_ms_igt) *
-					      (Run[ind].BestSegmentTime.GameTime.Value.TotalMilliseconds / sob_ms_igt);
-				}
-				catch
-				{
-					igt = 0;
-				}
+				// Add this split time to the run comparison on the correct timing method.
+				var comparisonTime = Time.Zero;
+				if (Run[idx].Comparisons.ContainsKey(Name))
+					comparisonTime = Run[idx].Comparisons[Name];
 
-				if (double.IsNaN(realTime)) realTime = 0;
-
-				if (double.IsNaN(igt)) igt = 0;
-
-				var segment_split_time = last_segment_times +
-				                         new Time(TimeSpan.FromMilliseconds(realTime),
-					                         TimeSpan.FromMilliseconds(igt));
-				Run[ind].Comparisons[Name] = segment_split_time;
-				last_segment_times = segment_split_time;
+				comparisonTime[method] = theorySplitTime;
+				Run[idx].Comparisons[Name] = comparisonTime;
 			}
 		}
 	}
