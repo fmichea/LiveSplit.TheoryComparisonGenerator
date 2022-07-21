@@ -35,9 +35,9 @@ namespace LiveSplit.UI.Components
             this.groupBoxGeneralSettings = new System.Windows.Forms.GroupBox();
             this.checkboxAutomaticPBComp = new System.Windows.Forms.CheckBox();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
-            this.checkedListBox1 = new System.Windows.Forms.CheckedListBox();
             this.buttonAddTheoryTime = new System.Windows.Forms.Button();
             this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
+            this.checkedListBox1 = new System.Windows.Forms.CheckedListBox();
             this.label1 = new System.Windows.Forms.Label();
             this.tableLayoutPanel1.SuspendLayout();
             this.groupBoxGeneralSettings.SuspendLayout();
@@ -96,24 +96,16 @@ namespace LiveSplit.UI.Components
             this.tableLayoutPanel2.Size = new System.Drawing.Size(516, 123);
             this.tableLayoutPanel2.TabIndex = 2;
             // 
-            // checkedListBox1
-            // 
-            this.checkedListBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.checkedListBox1.FormattingEnabled = true;
-            this.checkedListBox1.Location = new System.Drawing.Point(3, 25);
-            this.checkedListBox1.Name = "checkedListBox1";
-            this.checkedListBox1.Size = new System.Drawing.Size(255, 79);
-            this.checkedListBox1.TabIndex = 1;
-            // 
             // buttonAddTheoryTime
             // 
             this.buttonAddTheoryTime.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.buttonAddTheoryTime.Location = new System.Drawing.Point(7, 50);
+            this.buttonAddTheoryTime.Location = new System.Drawing.Point(8, 50);
             this.buttonAddTheoryTime.Name = "buttonAddTheoryTime";
             this.buttonAddTheoryTime.Size = new System.Drawing.Size(75, 23);
             this.buttonAddTheoryTime.TabIndex = 2;
             this.buttonAddTheoryTime.Text = "Add Time";
             this.buttonAddTheoryTime.UseVisualStyleBackColor = true;
+            this.buttonAddTheoryTime.Click += new System.EventHandler(this.buttonAddTheoryTime_Click);
             // 
             // tableLayoutPanel3
             // 
@@ -123,13 +115,22 @@ namespace LiveSplit.UI.Components
             this.tableLayoutPanel3.Controls.Add(this.checkedListBox1, 0, 1);
             this.tableLayoutPanel3.Controls.Add(this.label1, 0, 0);
             this.tableLayoutPanel3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel3.Location = new System.Drawing.Point(93, 3);
+            this.tableLayoutPanel3.Location = new System.Drawing.Point(94, 3);
             this.tableLayoutPanel3.Name = "tableLayoutPanel3";
             this.tableLayoutPanel3.RowCount = 2;
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 18.80342F));
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 81.19658F));
-            this.tableLayoutPanel3.Size = new System.Drawing.Size(420, 117);
+            this.tableLayoutPanel3.Size = new System.Drawing.Size(419, 117);
             this.tableLayoutPanel3.TabIndex = 3;
+            // 
+            // checkedListBox1
+            // 
+            this.checkedListBox1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.checkedListBox1.FormattingEnabled = true;
+            this.checkedListBox1.Location = new System.Drawing.Point(3, 25);
+            this.checkedListBox1.Name = "checkedListBox1";
+            this.checkedListBox1.Size = new System.Drawing.Size(413, 89);
+            this.checkedListBox1.TabIndex = 1;
             // 
             // label1
             // 
@@ -137,7 +138,7 @@ namespace LiveSplit.UI.Components
             this.label1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.label1.Location = new System.Drawing.Point(3, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(414, 22);
+            this.label1.Size = new System.Drawing.Size(413, 22);
             this.label1.TabIndex = 2;
             this.label1.Text = "Saved times for Loaded Split File:";
             this.label1.TextAlign = System.Drawing.ContentAlignment.BottomLeft;

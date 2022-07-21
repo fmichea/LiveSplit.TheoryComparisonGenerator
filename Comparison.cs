@@ -8,6 +8,8 @@ namespace LiveSplit.UI.Components
 {
     public class Comparison
     {
+        public static char StringDivider = '$';
+        public static string ListDivider = "|";
         public bool Enabled { get; set; }
         public string SplitsName { get; set; }
 
@@ -21,7 +23,7 @@ namespace LiveSplit.UI.Components
         }
         public Comparison(string comparison_string)
         {
-            string[] fields = comparison_string.Split('$');
+            string[] fields = comparison_string.Split(StringDivider);
             if (fields.Length == 3)
             {
                 SplitsName = fields[0];
@@ -32,7 +34,7 @@ namespace LiveSplit.UI.Components
 
         public override string ToString()
         {
-            return $"{SplitsName}${ComparisonName}${Enabled.ToString()}";
+            return $"{SplitsName}{StringDivider}{ComparisonName}{StringDivider}{Enabled.ToString()}";
         }
     }
 }

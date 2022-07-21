@@ -48,7 +48,7 @@ namespace LiveSplit.UI.Components
         {
             List<string> comparisons = new List<string>();
             Comparisons.ForEach(x => comparisons.Add(x.ToString()));
-            return String.Join("|", comparisons);
+            return String.Join(Comparison.ListDivider, comparisons);
         }
         public void SetComparisonString(string value)
         {
@@ -84,6 +84,9 @@ namespace LiveSplit.UI.Components
             return hashCode;
         }
 
-
+        private void buttonAddTheoryTime_Click(object sender, EventArgs e)
+        {
+          //TODO: Add logic for adding theory times to the Comparison list  
+        }
     }
 }
