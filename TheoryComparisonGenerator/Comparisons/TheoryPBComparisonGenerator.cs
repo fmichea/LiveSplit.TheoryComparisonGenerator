@@ -10,7 +10,7 @@ namespace LiveSplit.TheoryComparisonGenerator.Comparisons
 			get { return "Theory PB";  }
 		}
 
-		public TheoryPBComparisonGenerator(IRun run, Time target) : base(run, target) {}
+		public TheoryPBComparisonGenerator(IRun run, Time target) : base(run, "", target) {}
 
 		public override void Generate(ISettings settings)
 		{

@@ -116,7 +116,14 @@ namespace LiveSplit.UI.Components
 			//    times are configured and add all of them.
 
 			// FIXME: Remove hard coded theory time for testing.
-			addComparisonToRun(state, new TheoryTimeComparisonGenerator(run, new Time(TimeSpan.Parse("00:20:00.000"), TimeSpan.Zero)));
+			var timeSpan = TimeSpan.Parse("00:20:00.000");
+
+			var comparison = new TheoryTimeComparisonGenerator(
+				run,
+				"Theory Goal",
+				new Time(timeSpan, timeSpan)
+			);
+			addComparisonToRun(state, comparison);
 		}
 
 		private void removeComparisonFromRun(LiveSplitState state, string generatorName)

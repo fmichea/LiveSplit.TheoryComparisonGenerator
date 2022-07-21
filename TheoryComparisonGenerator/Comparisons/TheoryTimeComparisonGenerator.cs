@@ -7,19 +7,48 @@ namespace LiveSplit.TheoryComparisonGenerator.Comparisons
 {
 	public class TheoryTimeComparisonGenerator : IComparisonGenerator
 	{
-		public TheoryTimeComparisonGenerator(IRun run, Time target)
+		public TheoryTimeComparisonGenerator(IRun run, string name, Time target)
 		{
 			Run = run;
 			Target = target;
+			alias = name;
 		}
 
 		public Time Target { get; set; }
 
 		public IRun Run { get; set; }
 
-		public virtual string Name =>
-			// FIXME: Handle timing method selection for title.
-			string.Format("Theory {0}", Target.RealTime.Value.ToString());
+		public virtual string Name => formatName();
+
+		private string alias { get; set; }
+
+		private string formatName()
+		{
+			if (alias != "") return alias;
+
+			// FIXME: Handle timing method selection for title. Currently selected timing method is
+			//   available in LiveSplitState under CurrentTimingMethod however the name of the comparison
+			//   does not currently update when the timing method is changed. Target currently set so
+			//   target for both timing methods are the same.
+			var timeSpan = Target[TimingMethod.RealTime];
+			if (timeSpan == null)
+			{
+				return "Theory ???";
+			}
+
+			return $"Theory {formatTimeSpan(timeSpan.Value)}";
+		}
+
+		private string formatTimeSpan(TimeSpan timeSpan)
+		{
+			string value = timeSpan.ToString();
+
+			// Remove prefixes which are not needed. "00:" becomes "" and "01:" becomes "1:".
+			value = value.TrimStart('0').TrimStart(':');
+			value = value.TrimStart('0').TrimStart(':');
+
+			return value;
+		}
 
 		public virtual void Generate(ISettings settings)
 		{
