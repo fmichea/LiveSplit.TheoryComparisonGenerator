@@ -19,12 +19,16 @@ namespace LiveSplit.UI.Components
 		public TheoryComparisonGeneratorSettings Settings { get; set; }
 		public LiveSplitState CurrentState { get; set; }
 
+		private List<string> installedComparisons { get; set; }
+
 		public TheoryComparisonGeneratorComponent(LiveSplitState state)
 		{
 			CurrentState = state;
 
 			Settings = new TheoryComparisonGeneratorSettings(state);
 			Settings.OnChange += settings_OnChange;
+
+			installedComparisons = new List<string>();
 		}
 
 		public void DrawVertical(Graphics g, LiveSplitState state, float width, Region clipRegion)
@@ -97,7 +101,11 @@ namespace LiveSplit.UI.Components
 		{
 			IRun run = state.Run;
 
-			// FIXME: remove all currently added theory times here? Easier to handle theory times changes.
+			foreach (var installedComparison in installedComparisons)
+			{
+				removeComparisonFromRun(state, installedComparison);
+			}
+			installedComparisons.Clear();
 
 			if (Settings.AutoTheoryPB)
 			{
@@ -111,9 +119,9 @@ namespace LiveSplit.UI.Components
 			addComparisonToRun(state, new TheoryTimeComparisonGenerator(run, new Time(TimeSpan.Parse("00:20:00.000"), TimeSpan.Zero)));
 		}
 
-		private void removeComparisonFromRun(LiveSplitState state, IComparisonGenerator generator)
+		private void removeComparisonFromRun(LiveSplitState state, string generatorName)
 		{
-			var prevComparison = state.Run.ComparisonGenerators.FirstOrDefault(x => x.Name == generator.Name);
+			var prevComparison = state.Run.ComparisonGenerators.FirstOrDefault(x => x.Name == generatorName);
 			if (prevComparison != null)
 			{
 				state.Run.ComparisonGenerators.Remove(prevComparison);
@@ -122,7 +130,7 @@ namespace LiveSplit.UI.Components
 
 		private void addComparisonToRun(LiveSplitState state, IComparisonGenerator generator)
 		{
-			removeComparisonFromRun(state, generator);
+			installedComparisons.Add(generator.Name);
 
 			// TODO: Find out why generate is only called after reset, forcing us to call it once on init.
 			generator.Generate(state.Settings);
