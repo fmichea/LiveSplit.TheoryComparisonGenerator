@@ -124,6 +124,15 @@ namespace LiveSplit.UI.Components
 				new Time(timeSpan, timeSpan)
 			);
 			addComparisonToRun(state, comparison);
+
+			// We revert comparison to PB if the comparison that was selected is removed. (eg. file change
+			// removes theory time currently selected).
+			var currentlySelectedComparison =
+				run.ComparisonGenerators.FirstOrDefault(x => x.Name == state.CurrentComparison);
+			if (currentlySelectedComparison == null)
+			{
+				state.CurrentComparison = Run.PersonalBestComparisonName;
+			}
 		}
 
 		private void removeComparisonFromRun(LiveSplitState state, string generatorName)
