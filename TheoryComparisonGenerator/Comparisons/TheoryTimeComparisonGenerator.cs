@@ -76,16 +76,27 @@ namespace LiveSplit.TheoryComparisonGenerator.Comparisons
 			// For each segment in the run, find the split time for this segment using the multiplier.
 			for (var idx = 0; idx < Run.Count; idx++)
 			{
-				// Fetch the segment gold, this should never fail since we already computed the SOB.
-				var gold = Run[idx].BestSegmentTime[method];
-				if (gold == null) continue;
+				if (idx == Run.Count - 1)
+				{
+					// Last split gets the exact target to avoid floating point inaccuracy. The
+					// difference should be very minimal with what would have resulted in "else"
+					// computation, however this avoids displaying "18:59.99" when user chooses
+					// a 19:00 target.
+					theorySplitTime = target.Value;
+				}
+				else
+				{
+					// Fetch the segment gold, this should never fail since we already computed the SOB.
+					var gold = Run[idx].BestSegmentTime[method];
+					if (gold == null) continue;
 
-				// Variable theorySegmentTime is the expected segment duration for theory.
-				var theorySegmentTime = gold.Value.TotalMilliseconds * goldMultiplier;
+					// Variable theorySegmentTime is the expected segment duration for theory.
+					var theorySegmentTime = gold.Value.TotalMilliseconds * goldMultiplier;
 
-				// Variable theorySplitTime is the cumulative time to the end of this segment from run
-				// start, in other words the deadline by which to split this segment.
-				theorySplitTime += TimeSpan.FromMilliseconds(theorySegmentTime);
+					// Variable theorySplitTime is the cumulative time to the end of this segment from run
+					// start, in other words the deadline by which to split this segment.
+					theorySplitTime += TimeSpan.FromMilliseconds(theorySegmentTime);
+				}
 
 				// Add this split time to the run comparison on the correct timing method.
 				var comparisonTime = Time.Zero;
