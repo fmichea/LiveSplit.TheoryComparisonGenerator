@@ -56,6 +56,7 @@ namespace LiveSplit.UI.Components
 			{
 				CurrentState = state;
 			}
+
 		}
 
 		public XmlNode GetSettings(XmlDocument document)
