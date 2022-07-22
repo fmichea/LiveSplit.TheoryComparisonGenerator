@@ -95,7 +95,7 @@ namespace LiveSplit.UI.Components
 
 		void settings_OnChange(object sender, EventArgs e)
 		{
-			Console.WriteLine("Settings have changed!");
+			updateComparisons(CurrentState);
 		}
 
 		void updateComparisons(LiveSplitState state)
@@ -113,18 +113,31 @@ namespace LiveSplit.UI.Components
 				addComparisonToRun(state, new TheoryPBComparisonGenerator(run, Time.Zero));
 			}
 
-			// FIXME: Here we would need to use the settings tied to the run to figure out which theory
-			//    times are configured and add all of them.
+			foreach (var comparisonSetting in Settings.ComparisonsList)
+			{
+				// This is a theory time for a different split file.
+				if (comparisonSetting.SplitsName != Settings.SplitsName)
+				{
+					continue;
+				}
 
-			// FIXME: Remove hard coded theory time for testing.
-			var timeSpan = TimeSpan.Parse("00:20:00.000");
+				var timeSpan = TimeSpan.Zero;
+				try
+				{
+					timeSpan = TimeSpan.Parse(comparisonSetting.Target);
+				}
+				catch
+				{
+					continue;
+				}
 
-			var comparison = new TheoryTimeComparisonGenerator(
-				run,
-				"Theory Goal",
-				new Time(timeSpan, timeSpan)
-			);
-			addComparisonToRun(state, comparison);
+				var comparison = new TheoryTimeComparisonGenerator(
+					run,
+					comparisonSetting.SecondaryName,
+					new Time(timeSpan, timeSpan)
+				);
+				addComparisonToRun(state, comparison);
+			}
 
 			// We revert comparison to PB if the comparison that was selected is removed. (eg. file change
 			// removes theory time currently selected).
