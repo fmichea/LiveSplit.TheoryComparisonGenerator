@@ -10,7 +10,7 @@ using LiveSplit.Model;
 namespace LiveSplit.UI.Components
 {
     public partial class TheoryComparisonGeneratorSettings : UserControl
-    {        
+    {
 
         public TheoryComparisonGeneratorSettings(LiveSplitState state)
         {
@@ -23,7 +23,6 @@ namespace LiveSplit.UI.Components
             StartingTableLayoutSize = tableComparisons.Size;
             ComparisonsList = new List<ComparisonSettings>();
 
-            // FIXME: checking/unchecking the box doesn't seem to have any effect?
             checkboxAutomaticPBComp.DataBindings.Add(
                 "Checked",
                 this,
@@ -56,7 +55,11 @@ namespace LiveSplit.UI.Components
             foreach (var child in comparisonsElement.ChildNodes)
             {
                 var comparisonData = ComparisonData.FromXml((XmlNode)child);
-                ComparisonsList.Add(new ComparisonSettings(CurrentState, comparisonData.SplitsName, ComparisonsList) { Data = comparisonData });
+
+                var comparisonControl = new ComparisonSettings(CurrentState, comparisonData.SplitsName, ComparisonsList)
+                    { Data = comparisonData };
+                comparisonControl.OnChange += comparisonSettings_OnChange;
+                ComparisonsList.Add(comparisonControl);
             }
         }
 
@@ -113,8 +116,9 @@ namespace LiveSplit.UI.Components
             ResetComparisons();
             if (ComparisonsList.Count > 0)
                 ComparisonsList.Last().SelectControl();
-          
+            OnChange?.Invoke(this, null);
         }
+
         private void ResetComparisons()
         {
             ClearLayout();
@@ -149,9 +153,10 @@ namespace LiveSplit.UI.Components
         private void btnAddComparison_Click(object sender, EventArgs e)
         {
             var comparisonControl = new ComparisonSettings(CurrentState, SplitsName, ComparisonsList);
+            comparisonControl.OnChange += comparisonSettings_OnChange;
             ComparisonsList.Add(comparisonControl);
             AddColumnToLayout(comparisonControl, ComparisonsList.Count);
-
+            OnChange?.Invoke(this, null);
         }
 
         private void TheoryComparisonGeneratorSettings_Load(object sender, EventArgs e)
@@ -162,6 +167,17 @@ namespace LiveSplit.UI.Components
         private void button1_Click(object sender, EventArgs e)
         {
             //TODO Add functionality for show all button.
+        }
+
+        private void checkboxAutomaticPBComp_CheckedChanged(object sender, EventArgs e)
+        {
+            AutoTheoryPB = checkboxAutomaticPBComp.Checked;
+            OnChange?.Invoke(this, null);
+        }
+
+        private void comparisonSettings_OnChange(object sender, EventArgs e)
+        {
+            OnChange?.Invoke(this, null);
         }
     }
 }

@@ -25,6 +25,8 @@ namespace LiveSplit.UI.Components
 
         public event EventHandler ComparisonRemoved;
 
+        public event EventHandler OnChange;
+
         public ComparisonSettings(LiveSplitState State, string splits_name, IList<ComparisonSettings> comparisonSettings)
         {
             InitializeComponent();
@@ -36,11 +38,13 @@ namespace LiveSplit.UI.Components
         private void txtAltName_TextChanged(object sender, EventArgs e)
         {
             SecondaryName = txtAltName.Text;
+            OnChange?.Invoke(this, null);
         }
 
         private void txtTargetTime_TextChanged(object sender, EventArgs e)
         {
             Target = txtTargetTime.Text;
+            OnChange?.Invoke(this, null);
         }
 
         private void ComparisonSettings_Load(object sender, EventArgs e)
@@ -52,9 +56,6 @@ namespace LiveSplit.UI.Components
             txtName.DataBindings.Add("Text", this, "SplitsName", false, DataSourceUpdateMode.OnPropertyChanged);
             txtAltName.DataBindings.Add("Text", this, "SecondaryName", false, DataSourceUpdateMode.OnPropertyChanged);
             txtTargetTime.DataBindings.Add("Text", this, "Target", false, DataSourceUpdateMode.OnPropertyChanged);
-
-
-
         }
         public void SelectControl()
         {
