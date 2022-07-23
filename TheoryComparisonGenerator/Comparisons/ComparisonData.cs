@@ -61,7 +61,7 @@ namespace LiveSplit.TheoryComparisonGenerator.Comparisons
         {
             if (SecondaryName != "") return SecondaryName;
 
-            var timeSpan = TargetT[TimingMethod.GameTime];
+            var timeSpan = TargetT[TimingMethod.RealTime];
             if (timeSpan == null) return "Theory ???";
             return $"Theory {formatTimeSpan(timeSpan.Value)}";
         }
