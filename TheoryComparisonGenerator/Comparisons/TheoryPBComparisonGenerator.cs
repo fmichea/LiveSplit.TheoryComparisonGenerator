@@ -21,8 +21,7 @@ namespace LiveSplit.TheoryComparisonGenerator.Comparisons
 
         public override void Generate(ISettings settings)
         {
-            // This is wrong if the game uses different timing method, so we need to dig that out of the state.
-            Data.Target = Run[Run.Count - 1].PersonalBestSplitTime[TimingMethod.RealTime].ToString();
+            Data.TargetT = Run[Run.Count - 1].PersonalBestSplitTime;
             base.Generate(settings);
         }
     }

@@ -1,41 +1,38 @@
 ﻿using System;
 using System.Xml;
+using LiveSplit.Model;
 using LiveSplit.UI;
 
 namespace LiveSplit.TheoryComparisonGenerator.Comparisons
 {
     public class ComparisonData
     {
-        public ComparisonData(string split_name, string secondary_name, string target)
+        public ComparisonData(string splitName, string secondaryName, string target)
+            : this(splitName, secondaryName, makeTimeFromString(target))
         {
-            SplitsName = split_name;
-            SecondaryName = secondary_name;
-            Target = target;
+        }
+
+        public ComparisonData(string splitName, string secondaryName, Time target)
+        {
+            SplitsName = splitName;
+            SecondaryName = secondaryName;
+            TargetT = target;
         }
 
         public ComparisonData(ComparisonData other)
         {
             SplitsName = other.SplitsName;
             SecondaryName = other.SecondaryName;
-            Target = other.Target;
+            TargetT = other.TargetT;
         }
 
-        public string Target { get; set; }
-
-        public TimeSpan? TargetT
+        public string Target
         {
-            get
-            {
-                try
-                {
-                    return TimeSpan.Parse(Target);
-                }
-                catch
-                {
-                    return null;
-                }
-            }
+            get => TargetT[TimingMethod.RealTime].ToString();
+            set => TargetT = makeTimeFromString(value);
         }
+
+        public Time TargetT { get; set; }
 
         public string SplitsName { get; set; }
 
@@ -64,9 +61,8 @@ namespace LiveSplit.TheoryComparisonGenerator.Comparisons
         {
             if (SecondaryName != "") return SecondaryName;
 
-            var timeSpan = TargetT;
+            var timeSpan = TargetT[TimingMethod.RealTime];
             if (timeSpan == null) return "Theory ???";
-
             return $"Theory {formatTimeSpan(timeSpan.Value)}";
         }
 
@@ -79,6 +75,19 @@ namespace LiveSplit.TheoryComparisonGenerator.Comparisons
             value = value.TrimStart('0').TrimStart(':');
 
             return value;
+        }
+
+        private static Time makeTimeFromString(string target)
+        {
+            try
+            {
+                var timeSpan = TimeSpan.Parse(target);
+                return new Time(timeSpan, timeSpan);
+            }
+            catch
+            {
+                return Time.Zero;
+            }
         }
     }
 }
