@@ -80,6 +80,7 @@ namespace LiveSplit.UI.Components
 
         public void Dispose()
         {
+            _removeAllComparisons(CurrentState);
         }
 
         public void Prepare(LiveSplitState state)
@@ -133,9 +134,7 @@ namespace LiveSplit.UI.Components
         {
             var run = state.Run;
 
-            foreach (var installedComparison in installedComparisons)
-                _removeComparisonFromRun(state, installedComparison);
-            installedComparisons.Clear();
+            _removeAllComparisons(state);
 
             if (Settings.AutoTheoryPB)
             {
@@ -156,6 +155,13 @@ namespace LiveSplit.UI.Components
             }
 
             _updateSelectedComparison(state, state.CurrentComparison);
+        }
+
+        private void _removeAllComparisons(LiveSplitState state)
+        {
+            foreach (var installedComparison in installedComparisons)
+                _removeComparisonFromRun(state, installedComparison);
+            installedComparisons.Clear();
         }
 
         private void _updateSelectedComparison(LiveSplitState state, string selectedComparison)
