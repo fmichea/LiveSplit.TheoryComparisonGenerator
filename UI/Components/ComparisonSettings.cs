@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using LiveSplit.TheoryComparisonGenerator.Comparisons;
 
 namespace LiveSplit.UI.Components
 {
@@ -28,7 +29,7 @@ namespace LiveSplit.UI.Components
         public event EventHandler MovedUp;
         public event EventHandler MovedDown;
 
-        public event EventHandler OnChange;
+        public event EventHandler<ComparisonSettingsChangeEventArgs> OnChange;
 
         public ComparisonSettings(LiveSplitState State, string splits_name, IList<ComparisonSettings> comparisonSettings)
         {
@@ -40,26 +41,49 @@ namespace LiveSplit.UI.Components
 
         private void txtAltName_TextChanged(object sender, EventArgs e)
         {
-            SecondaryName = txtAltName.Text;
-            OnChange?.Invoke(this, null);
+            var newText = txtAltName.Text;
+
+            if (Data.SecondaryName == newText)
+            {
+                return;
+            }
+
+            var prevData = Data;
+            Data = new ComparisonData(Data) { SecondaryName = newText };
+            OnChange?.Invoke(this, new ComparisonSettingsChangeEventArgs(prevData, Data));
         }
 
         private void txtTargetTime_TextChanged(object sender, EventArgs e)
         {
-            Target = txtTargetTime.Text;
-            OnChange?.Invoke(this, null);
+
+            var newText = txtTargetTime.Text;
+
+            if (Data.Target == newText)
+            {
+                return;
+            }
+
+            var prevData = Data;
+            Data = new ComparisonData(Data) { Target = newText};
+            OnChange?.Invoke(this, new ComparisonSettingsChangeEventArgs(prevData, Data));
         }
 
         private void ComparisonSettings_Load(object sender, EventArgs e)
         {
-            txtName.DataBindings.Clear();
-            txtAltName.DataBindings.Clear();
-            txtTargetTime.DataBindings.Clear();
+            txtName.Text = Data.SplitsName;
+            txtAltName.Text = Data.SecondaryName;
+            txtTargetTime.Text = Data.Target;
 
-            txtName.DataBindings.Add("Text", this, "SplitsName", false, DataSourceUpdateMode.OnPropertyChanged);
-            txtAltName.DataBindings.Add("Text", this, "SecondaryName", false, DataSourceUpdateMode.OnPropertyChanged);
-            txtTargetTime.DataBindings.Add("Text", this, "Target", false, DataSourceUpdateMode.OnPropertyChanged);
+            // This hooks into data get/set but interferes with the t
+            // txtName.DataBindings.Clear();
+            // txtAltName.DataBindings.Clear();
+            // txtTargetTime.DataBindings.Clear();
+            //
+            // txtName.DataBindings.Add("Text", this, "SplitsName", false, DataSourceUpdateMode.OnPropertyChanged);
+            // txtAltName.DataBindings.Add("Text", this, "SecondaryName", false, DataSourceUpdateMode.OnPropertyChanged);
+            // txtTargetTime.DataBindings.Add("Text", this, "Target", false, DataSourceUpdateMode.OnPropertyChanged);
         }
+
         public void SelectControl()
         {
             btnRemoveColumn.Select();
@@ -76,9 +100,13 @@ namespace LiveSplit.UI.Components
 
         private void btnAttachToSplits_Click(object sender, EventArgs e)
         {
-            SplitsName = Path.GetFileNameWithoutExtension(CurrentState?.Run.FilePath);
-            txtName.Text = SplitsName;
-            OnChange?.Invoke(this, null);
+            var newSplitsName = Path.GetFileNameWithoutExtension(CurrentState?.Run.FilePath);
+
+            var prevData = Data;
+            Data = new ComparisonData(Data) { SplitsName = newSplitsName };
+            OnChange?.Invoke(this, new ComparisonSettingsChangeEventArgs(prevData, Data));
+
+            txtName.Text = newSplitsName;
         }
 
         private void btnMoveUp_Click(object sender, EventArgs e)
@@ -90,6 +118,17 @@ namespace LiveSplit.UI.Components
         {
             MovedDown?.Invoke(this, null);
         }
+    }
 
+    public class ComparisonSettingsChangeEventArgs : EventArgs
+    {
+        public ComparisonSettingsChangeEventArgs(ComparisonData prevData, ComparisonData newData)
+        {
+            PrevData = prevData;
+            NewData = newData;
+        }
+
+        public ComparisonData PrevData { get; protected set; }
+        public ComparisonData NewData { get; protected set; }
     }
 }

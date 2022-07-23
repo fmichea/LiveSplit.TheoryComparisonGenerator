@@ -46,8 +46,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ComparisonData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TheoryComparisonGenerator\Comparisons\ComparisonData.cs" />
     <Compile Include="TheoryComparisonGenerator\Comparisons\TheoryTimeComparisonGenerator.cs" />
     <Compile Include="TheoryComparisonGenerator\Comparisons\TheoryPBComparisonGenerator.cs" />
     <Compile Include="UI\Components\ComparisonSettings.cs">

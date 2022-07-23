@@ -3,19 +3,27 @@ using LiveSplit.Options;
 
 namespace LiveSplit.TheoryComparisonGenerator.Comparisons
 {
-	public class TheoryPBComparisonGenerator : TheoryTimeComparisonGenerator
-	{
-		public override string Name
-		{
-			get { return "Theory PB";  }
-		}
+    public class TheoryPBComparisonGenerator : TheoryTimeComparisonGenerator
+    {
 
-		public TheoryPBComparisonGenerator(IRun run, Time target) : base(run, "", target) {}
+        public TheoryPBComparisonGenerator(IRun run, ComparisonData data) : base(run, data)
+        {
+        }
 
-		public override void Generate(ISettings settings)
-		{
-			Target = Run[Run.Count - 1].PersonalBestSplitTime;
-			base.Generate(settings);
-		}
-	}
+        public override string Name
+        {
+            get
+            {
+                if (Data.SecondaryName != "") return Data.SecondaryName;
+                return "Theory PB";
+            }
+        }
+
+        public override void Generate(ISettings settings)
+        {
+            // This is wrong if the game uses different timing method, so we need to dig that out of the state.
+            Data.Target = Run[Run.Count - 1].PersonalBestSplitTime[TimingMethod.RealTime].ToString();
+            base.Generate(settings);
+        }
+    }
 }

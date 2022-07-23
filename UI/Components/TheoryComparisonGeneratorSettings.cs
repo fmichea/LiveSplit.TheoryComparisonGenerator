@@ -6,6 +6,7 @@ using System.Linq;
 using System.Windows.Forms;
 using System.Xml;
 using LiveSplit.Model;
+using LiveSplit.TheoryComparisonGenerator.Comparisons;
 
 namespace LiveSplit.UI.Components
 {
@@ -44,6 +45,7 @@ namespace LiveSplit.UI.Components
 
 
         public event EventHandler OnChange;
+        public event EventHandler<ComparisonSettingsChangeEventArgs> OnChangeComparison;
 
         public void SetSettings(XmlNode node)
         {
@@ -219,9 +221,9 @@ namespace LiveSplit.UI.Components
             OnChange?.Invoke(this, null);
         }
 
-        private void comparisonSettings_OnChange(object sender, EventArgs e)
+        private void comparisonSettings_OnChange(object sender, ComparisonSettingsChangeEventArgs e)
         {
-            OnChange?.Invoke(this, null);
+            OnChangeComparison?.Invoke(this, e);
         }
     }
 }
