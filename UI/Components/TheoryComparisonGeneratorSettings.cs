@@ -22,7 +22,7 @@ namespace LiveSplit.UI.Components
             StartingSize = Size;
             StartingTableLayoutSize = tableComparisons.Size;
             ComparisonsList = new List<ComparisonSettings>();
-
+            ShowAll = false;
             checkboxAutomaticPBComp.DataBindings.Add(
                 "Checked",
                 this,
@@ -31,6 +31,7 @@ namespace LiveSplit.UI.Components
                 DataSourceUpdateMode.OnPropertyChanged
             );
         }
+
         public Size StartingSize { get; set; }
         public Size StartingTableLayoutSize { get; set; }
         public LiveSplitState CurrentState { get; set; }
@@ -57,7 +58,7 @@ namespace LiveSplit.UI.Components
                 var comparisonData = ComparisonData.FromXml((XmlNode)child);
 
                 var comparisonControl = new ComparisonSettings(CurrentState, comparisonData.SplitsName, ComparisonsList)
-                    { Data = comparisonData };
+                { Data = comparisonData };
                 comparisonControl.OnChange += comparisonSettings_OnChange;
                 ComparisonsList.Add(comparisonControl);
             }
@@ -106,8 +107,35 @@ namespace LiveSplit.UI.Components
             tableComparisons.SetColumnSpan(comparison, 4);
             comparison.ComparisonRemoved -= column_ColumnRemoved;
             comparison.ComparisonRemoved += column_ColumnRemoved;
+            comparison.MovedUp -= column_MovedUp;
+            comparison.MovedDown -= column_MovedDown;
+            comparison.MovedUp += column_MovedUp;
+            comparison.MovedDown += column_MovedDown;
+
+        }
+        void column_MovedDown(object sender, EventArgs e)
+        {
+            var column = (ComparisonSettings)sender;
+            var index = ComparisonsList.IndexOf(column);
+            ComparisonsList.Remove(column);
+            ComparisonsList.Insert(index + 1, column);
+            ResetComparisons();
+            column.SelectControl();
+            OnChange?.Invoke(this, null);
+
         }
 
+        void column_MovedUp(object sender, EventArgs e)
+        {
+            var column = (ComparisonSettings)sender;
+            var index = ComparisonsList.IndexOf(column);
+            ComparisonsList.Remove(column);
+            ComparisonsList.Insert(index - 1, column);
+            ResetComparisons();
+            column.SelectControl();
+            OnChange?.Invoke(this, null);
+
+        }
         void column_ColumnRemoved(object sender, EventArgs e)
         {
             var comparison = (ComparisonSettings)sender;
@@ -125,9 +153,13 @@ namespace LiveSplit.UI.Components
             var index = 1;
             foreach (var comparison in ComparisonsList)
             {
-                UpdateLayoutForColumn();
-                AddColumnToLayout(comparison, index);
-                index++;
+                if (comparison.SplitsName == SplitsName || ShowAll)
+                {
+                    UpdateLayoutForColumn();
+                    AddColumnToLayout(comparison, index);
+                    comparison.UpdateEnabledButtons();
+                    index++;
+                }
             }
         }
         private void ClearLayout()
@@ -156,17 +188,29 @@ namespace LiveSplit.UI.Components
             comparisonControl.OnChange += comparisonSettings_OnChange;
             ComparisonsList.Add(comparisonControl);
             AddColumnToLayout(comparisonControl, ComparisonsList.Count);
+            foreach (var comparison in ComparisonsList)
+                comparison.UpdateEnabledButtons();
             OnChange?.Invoke(this, null);
         }
 
         private void TheoryComparisonGeneratorSettings_Load(object sender, EventArgs e)
         {
+            SplitsName = Path.GetFileNameWithoutExtension(CurrentState?.Run.FilePath);
             ResetComparisons();
         }
-
-        private void button1_Click(object sender, EventArgs e)
+        private bool ShowAll { get; set; }
+        private void btnShowAll_Click(object sender, EventArgs e)
         {
-            //TODO Add functionality for show all button.
+            ShowAll = !ShowAll;
+            if (ShowAll)
+            {
+                btnShowAll.Text = "Hide other splits comparisons";
+            }
+            else
+            {
+                btnShowAll.Text = "Show All";
+            }
+            ResetComparisons();
         }
 
         private void checkboxAutomaticPBComp_CheckedChanged(object sender, EventArgs e)

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,6 +25,8 @@ namespace LiveSplit.UI.Components
         protected int TotalComparisons => ComparisonsList.Count;
 
         public event EventHandler ComparisonRemoved;
+        public event EventHandler MovedUp;
+        public event EventHandler MovedDown;
 
         public event EventHandler OnChange;
 
@@ -61,14 +64,32 @@ namespace LiveSplit.UI.Components
         {
             btnRemoveColumn.Select();
         }
+        public void UpdateEnabledButtons()
+        {
+            btnMoveDown.Enabled = ComparisonIndex < TotalComparisons - 1;
+            btnMoveUp.Enabled = ComparisonIndex > 0;
+        }
         private void btnRemoveColumn_Click(object sender, EventArgs e)
         {
             ComparisonRemoved?.Invoke(this, null);
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void btnAttachToSplits_Click(object sender, EventArgs e)
         {
-            //TODO Add functionality for Attach comparison
+            SplitsName = Path.GetFileNameWithoutExtension(CurrentState?.Run.FilePath);
+            txtName.Text = SplitsName;
+            OnChange?.Invoke(this, null);
         }
+
+        private void btnMoveUp_Click(object sender, EventArgs e)
+        {
+            MovedUp?.Invoke(this, null);
+        }
+
+        private void btnMoveDown_Click(object sender, EventArgs e)
+        {
+            MovedDown?.Invoke(this, null);
+        }
+
     }
 }
