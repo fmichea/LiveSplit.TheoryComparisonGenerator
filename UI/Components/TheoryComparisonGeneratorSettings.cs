@@ -155,7 +155,7 @@ namespace LiveSplit.UI.Components
             var index = 1;
             foreach (var comparison in ComparisonsList)
             {
-                if (comparison.SplitsName == SplitsName || ShowAll)
+                if (comparison.Data.SplitsName == SplitsName || ShowAll)
                 {
                     UpdateLayoutForColumn();
                     AddColumnToLayout(comparison, index);

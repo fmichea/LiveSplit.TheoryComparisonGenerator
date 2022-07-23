@@ -146,11 +146,12 @@ namespace LiveSplit.UI.Components
 
             foreach (var comparisonSetting in Settings.ComparisonsList)
             {
-                // This is a theory time for a different split file.
-                if (comparisonSetting.SplitsName !=
-                    Path.GetFileNameWithoutExtension(CurrentState?.Run.FilePath)) continue;
+                var comparisonData = comparisonSetting.Data;
 
-                var comparison = new TheoryTimeComparisonGenerator(run, comparisonSetting.Data);
+                // This is a theory time for a different split file.
+                if (comparisonData.SplitsName != Path.GetFileNameWithoutExtension(CurrentState?.Run.FilePath)) continue;
+
+                var comparison = new TheoryTimeComparisonGenerator(run, comparisonData);
                 _addComparisonToRun(state, comparison);
             }
 

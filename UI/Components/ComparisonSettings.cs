@@ -16,10 +16,6 @@ namespace LiveSplit.UI.Components
     public partial class ComparisonSettings : UserControl
     {
         public ComparisonData Data { get; set; }
-        public string SplitsName { get { return Data.SplitsName; } set { Data.SplitsName = value; } }
-        public string SecondaryName { get { return Data.SecondaryName; } set { Data.SecondaryName = value; } }
-
-        public string Target { get { return Data.Target; } set { Data.Target = value; } }
         protected IList<ComparisonSettings> ComparisonsList { get; set; }
         protected LiveSplitState CurrentState { get; set; }
         protected int ComparisonIndex => ComparisonsList.IndexOf(this);
@@ -73,15 +69,6 @@ namespace LiveSplit.UI.Components
             txtName.Text = Data.SplitsName;
             txtAltName.Text = Data.SecondaryName;
             txtTargetTime.Text = Data.Target;
-
-            // This hooks into data get/set but interferes with the t
-            // txtName.DataBindings.Clear();
-            // txtAltName.DataBindings.Clear();
-            // txtTargetTime.DataBindings.Clear();
-            //
-            // txtName.DataBindings.Add("Text", this, "SplitsName", false, DataSourceUpdateMode.OnPropertyChanged);
-            // txtAltName.DataBindings.Add("Text", this, "SecondaryName", false, DataSourceUpdateMode.OnPropertyChanged);
-            // txtTargetTime.DataBindings.Add("Text", this, "Target", false, DataSourceUpdateMode.OnPropertyChanged);
         }
 
         public void SelectControl()

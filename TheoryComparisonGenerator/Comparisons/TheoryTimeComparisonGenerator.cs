@@ -35,7 +35,7 @@ namespace LiveSplit.TheoryComparisonGenerator.Comparisons
 			if (sob == null) return;
 
 			// Target time must also be available.
-			var target = Data.TargetT;
+			var target = Data.TargetT[method];
 			if (target == null) return;
 
 			// Variable multiplier is the amount we need to multiple every gold to get theory split time.
