@@ -4,6 +4,15 @@ Theory Comparison Generator component for Livesplit to create theoretical splits
 **This is a pre-release version of the component**
 
 [Download the DLL here](https://github.com/thags15/LiveSplit.TheoryComparisonGenerator/releases/latest)
+
+## What are theory comparisons?
+Theory comparisons are comparisons that you can access in LiveSplit through this plugin that are generated based on your sum of best and a given goal time. To generate each segment time, the plugin will go through each comparison you have created and perform the following formula to calculate what time each segment in your splits file should be in order for you to get the goal time:  
+![image](https://user-images.githubusercontent.com/92997613/180649390-135a8ea9-3e81-4150-98d6-57b9df92f1cb.png)  
+
+These aim to give you a comparison that is nice to run against and an idea of what times you should be expecting to reach said goal time.
+
+
+
 ## Adding the plugin to LiveSplit
 Add the LiveSplit.TheoryComparisonGenerator.dll file to your LiveSplit's Components folder.
 
