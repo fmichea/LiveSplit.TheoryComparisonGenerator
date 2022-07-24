@@ -121,11 +121,11 @@ namespace LiveSplit.UI.Components
             var newSelectedName = prevName;
 
             // First we remove the previous comparison generator from the list.
-            _removeComparisonFromRun(state, prevName);
+            int idx = _removeComparisonFromRun(state, prevName);
 
             // If this has new data and the new data is part of the splits currently used, add the comparison
             // generator. In case of PB theory time, this is true if enabled.
-            if (_addComparisonToRun(state, generator))
+            if (_addComparisonToRun(state, generator, idx))
             {
                 newSelectedName = newData.FormattedName;
             }
@@ -142,12 +142,12 @@ namespace LiveSplit.UI.Components
 
             _removeAllComparisons(state);
 
-            _addComparisonToRun(state, new TheoryPBComparisonGenerator(run, Settings.TheoryPBData));
+            _addComparisonToRun(state, new TheoryPBComparisonGenerator(run, Settings.TheoryPBData), -1);
 
             foreach (var comparisonSetting in Settings.ComparisonsList)
             {
                 var comparison = new TheoryTimeComparisonGenerator(run, comparisonSetting.Data);
-                _addComparisonToRun(state, comparison);
+                _addComparisonToRun(state, comparison, -1);
             }
 
             _updateSelectedComparison(state, state.CurrentComparison);
@@ -172,13 +172,22 @@ namespace LiveSplit.UI.Components
                 state.CurrentComparison = selectedComparison;
         }
 
-        private void _removeComparisonFromRun(LiveSplitState state, string generatorName)
+        private int _removeComparisonFromRun(LiveSplitState state, string generatorName)
         {
-            var prevComparison = state.Run.ComparisonGenerators.FirstOrDefault(x => x.Name == generatorName);
-            if (prevComparison != null) state.Run.ComparisonGenerators.Remove(prevComparison);
+            var prevComparison = state.Run.ComparisonGenerators.FirstOrDefault(
+                x => x.Name == generatorName);
+
+            if (prevComparison != null)
+            {
+                int idx = state.Run.ComparisonGenerators.IndexOf(prevComparison);
+                state.Run.ComparisonGenerators.RemoveAt(idx);
+                return idx;
+            }
+
+            return -1;
         }
 
-        private bool _addComparisonToRun(LiveSplitState state, TheoryTimeComparisonGenerator generator)
+        private bool _addComparisonToRun(LiveSplitState state, TheoryTimeComparisonGenerator generator, int idx)
         {
             if (!generator.ShouldAddToSplits(Settings.SplitsName))
                 return false;
@@ -189,7 +198,14 @@ namespace LiveSplit.UI.Components
             generator.Generate(state.Settings);
 
             // Add comparison generator to the run.
-            state.Run.ComparisonGenerators.Add(generator);
+            if (idx != -1)
+            {
+                state.Run.ComparisonGenerators.Insert(idx, generator);
+            }
+            else
+            {
+                state.Run.ComparisonGenerators.Add(generator);
+            }
 
             return true;
         }
