@@ -20,6 +20,7 @@ namespace LiveSplit.UI.Components
             CurrentState = state;
             SplitsName = Path.GetFileNameWithoutExtension(CurrentState?.Run.FilePath);
             AutoTheoryPB = true;
+            AutoTheoryDisplayName = "";
             StartingSize = Size;
             StartingTableLayoutSize = tableComparisons.Size;
             ComparisonsList = new List<ComparisonSettings>();
@@ -31,6 +32,7 @@ namespace LiveSplit.UI.Components
                 false,
                 DataSourceUpdateMode.OnPropertyChanged
             );
+            txtTheoryPBAltName.DataBindings.Add("Text", this, "AutoTheoryDisplayName", false, DataSourceUpdateMode.OnPropertyChanged);
         }
 
         public Size StartingSize { get; set; }
@@ -38,7 +40,7 @@ namespace LiveSplit.UI.Components
         public LiveSplitState CurrentState { get; set; }
 
         public bool AutoTheoryPB { get; set; }
-
+        public string AutoTheoryDisplayName { get; set; }
         public string SplitsName { get; set; }
 
         public IList<ComparisonSettings> ComparisonsList { get; set; }
@@ -52,7 +54,7 @@ namespace LiveSplit.UI.Components
             var element = (XmlElement)node;
 
             AutoTheoryPB = SettingsHelper.ParseBool(element["AutoTheoryPB"]);
-
+            AutoTheoryDisplayName = SettingsHelper.ParseString(element["AutoTheoryDisplayName"]);
             var comparisonsElement = element["Comparisons"];
             ComparisonsList.Clear();
             foreach (var child in comparisonsElement.ChildNodes)
@@ -81,6 +83,7 @@ namespace LiveSplit.UI.Components
         private int CreateSettingsNode(XmlDocument document, XmlElement parent)
         {
             var hashCode = SettingsHelper.CreateSetting(document, parent, "AutoTheoryPB", AutoTheoryPB);
+            hashCode ^= SettingsHelper.CreateSetting(document, parent, "AutoTheoryDisplayName", AutoTheoryDisplayName);
             XmlElement comparisonsElement = null;
             if (document != null)
             {
@@ -221,9 +224,16 @@ namespace LiveSplit.UI.Components
             OnChange?.Invoke(this, null);
         }
 
+
         private void comparisonSettings_OnChange(object sender, ComparisonSettingsChangeEventArgs e)
         {
             OnChangeComparison?.Invoke(this, e);
+        }
+
+        private void txtTheoryPBAltName_TextChanged(object sender, EventArgs e)
+        {
+            AutoTheoryDisplayName = txtTheoryPBAltName.Text;
+            OnChange?.Invoke(this, null);
         }
     }
 }

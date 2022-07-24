@@ -60,7 +60,7 @@ namespace LiveSplit.UI.Components
             }
 
             var prevData = Data;
-            Data = new ComparisonData(Data) { Target = newText};
+            Data = new ComparisonData(Data) { Target = newText };
             OnChange?.Invoke(this, new ComparisonSettingsChangeEventArgs(prevData, Data));
         }
 

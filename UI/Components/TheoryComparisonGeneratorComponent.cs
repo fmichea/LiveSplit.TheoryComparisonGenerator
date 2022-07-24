@@ -139,7 +139,7 @@ namespace LiveSplit.UI.Components
             if (Settings.AutoTheoryPB)
             {
                 // FIXME: allow changing the name of the theory pb split.
-                var data = new ComparisonData(Settings.SplitsName, "", TimeSpan.Zero.ToString());
+                var data = new ComparisonData(Settings.SplitsName, Settings.AutoTheoryDisplayName, TimeSpan.Zero.ToString());
                 _addComparisonToRun(state, new TheoryPBComparisonGenerator(run, data));
             }
 
