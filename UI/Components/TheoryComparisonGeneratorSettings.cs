@@ -201,6 +201,7 @@ namespace LiveSplit.UI.Components
         {
             SplitsName = Path.GetFileNameWithoutExtension(CurrentState?.Run.FilePath);
             checkboxAutomaticPBComp.Checked = TheoryPBData.Enabled;
+            txtTheoryPBAltName.Text = TheoryPBData.SecondaryName;
             ResetComparisons();
         }
 
