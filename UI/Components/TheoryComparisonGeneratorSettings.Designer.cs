@@ -38,6 +38,8 @@ namespace LiveSplit.UI.Components
             this.tableComparisons = new System.Windows.Forms.TableLayoutPanel();
             this.btnAddComparison = new System.Windows.Forms.Button();
             this.btnShowAll = new System.Windows.Forms.Button();
+            this.txtTheoryPBAltName = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
             this.tableLayoutPanel1.SuspendLayout();
             this.groupBoxGeneralSettings.SuspendLayout();
             this.groupComparisons.SuspendLayout();
@@ -63,6 +65,8 @@ namespace LiveSplit.UI.Components
             // 
             // groupBoxGeneralSettings
             // 
+            this.groupBoxGeneralSettings.Controls.Add(this.label1);
+            this.groupBoxGeneralSettings.Controls.Add(this.txtTheoryPBAltName);
             this.groupBoxGeneralSettings.Controls.Add(this.checkboxAutomaticPBComp);
             this.groupBoxGeneralSettings.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupBoxGeneralSettings.Location = new System.Drawing.Point(3, 3);
@@ -134,6 +138,23 @@ namespace LiveSplit.UI.Components
             this.btnShowAll.UseVisualStyleBackColor = true;
             this.btnShowAll.Click += new System.EventHandler(this.btnShowAll_Click);
             // 
+            // txtTheoryPBAltName
+            // 
+            this.txtTheoryPBAltName.Location = new System.Drawing.Point(84, 49);
+            this.txtTheoryPBAltName.Name = "txtTheoryPBAltName";
+            this.txtTheoryPBAltName.Size = new System.Drawing.Size(206, 20);
+            this.txtTheoryPBAltName.TabIndex = 1;
+            this.txtTheoryPBAltName.TextChanged += new System.EventHandler(this.txtTheoryPBAltName_TextChanged);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(3, 52);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(75, 13);
+            this.label1.TabIndex = 2;
+            this.label1.Text = "Display Name:";
+            // 
             // TheoryComparisonGeneratorSettings
             // 
             this.AutoScroll = true;
@@ -144,6 +165,7 @@ namespace LiveSplit.UI.Components
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
             this.groupBoxGeneralSettings.ResumeLayout(false);
+            this.groupBoxGeneralSettings.PerformLayout();
             this.groupComparisons.ResumeLayout(false);
             this.groupComparisons.PerformLayout();
             this.tableComparisons.ResumeLayout(false);
@@ -164,5 +186,7 @@ namespace LiveSplit.UI.Components
         private System.Windows.Forms.TableLayoutPanel tableComparisons;
         private System.Windows.Forms.Button btnAddComparison;
         private System.Windows.Forms.Button btnShowAll;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.TextBox txtTheoryPBAltName;
     }
 }

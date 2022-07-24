@@ -28,7 +28,7 @@ namespace LiveSplit.TheoryComparisonGenerator.Comparisons
 
         public string Target
         {
-            get => TargetT[TimingMethod.RealTime].ToString();
+            get => TargetT[TimingMethod.RealTime]?.ToString(@"hh\:mm\:ss\.fff");
             set => TargetT = makeTimeFromString(value);
         }
 
@@ -74,6 +74,9 @@ namespace LiveSplit.TheoryComparisonGenerator.Comparisons
             value = value.TrimStart('0').TrimStart(':');
             value = value.TrimStart('0').TrimStart(':');
 
+            // Remove suffix which are not needed ".   " becomes "" and .100 becomes ".1"
+            value = value.TrimEnd('0').TrimEnd('.');
+
             return value;
         }
 
@@ -81,7 +84,7 @@ namespace LiveSplit.TheoryComparisonGenerator.Comparisons
         {
             try
             {
-                var timeSpan = TimeSpan.Parse(target);
+               var timeSpan = TimeSpan.Parse(target);
                 return new Time(timeSpan, timeSpan);
             }
             catch

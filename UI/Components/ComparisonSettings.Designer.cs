@@ -45,9 +45,9 @@ namespace LiveSplit.UI.Components
             this.groupComparison.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
-            //
+            // 
             // groupComparison
-            //
+            // 
             this.groupComparison.Controls.Add(this.tableLayoutPanel1);
             this.groupComparison.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupComparison.Location = new System.Drawing.Point(0, 0);
@@ -56,15 +56,15 @@ namespace LiveSplit.UI.Components
             this.groupComparison.TabIndex = 0;
             this.groupComparison.TabStop = false;
             this.groupComparison.Text = "Comparison";
-            //
+            // 
             // tableLayoutPanel1
-            //
+            // 
             this.tableLayoutPanel1.ColumnCount = 5;
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 63.28125F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 36.71875F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 66F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 43.67816F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 56.32184F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 81F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 137F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 63F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 64F));
             this.tableLayoutPanel1.Controls.Add(this.label3, 0, 2);
             this.tableLayoutPanel1.Controls.Add(this.txtAltName, 1, 1);
             this.tableLayoutPanel1.Controls.Add(this.label2, 0, 1);
@@ -81,129 +81,131 @@ namespace LiveSplit.UI.Components
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 4;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 23.28767F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 26.0274F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
             this.tableLayoutPanel1.Size = new System.Drawing.Size(421, 146);
             this.tableLayoutPanel1.TabIndex = 0;
-            //
+            // 
             // label3
-            //
+            // 
             this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(3, 83);
+            this.label3.Location = new System.Drawing.Point(3, 76);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(92, 13);
+            this.label3.Size = new System.Drawing.Size(54, 26);
             this.label3.TabIndex = 47;
             this.label3.Text = "Goal Time:";
-            //
+            // 
             // txtAltName
-            //
+            // 
             this.txtAltName.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.tableLayoutPanel1.SetColumnSpan(this.txtAltName, 4);
-            this.txtAltName.Location = new System.Drawing.Point(101, 44);
+            this.txtAltName.Location = new System.Drawing.Point(63, 43);
             this.txtAltName.Name = "txtAltName";
-            this.txtAltName.Size = new System.Drawing.Size(317, 20);
+            this.txtAltName.Size = new System.Drawing.Size(355, 20);
             this.txtAltName.TabIndex = 46;
             this.txtAltName.TextChanged += new System.EventHandler(this.txtAltName_TextChanged);
-            //
+            // 
             // label2
-            //
+            // 
             this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(3, 41);
+            this.label2.Location = new System.Drawing.Point(3, 36);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(92, 26);
+            this.label2.Size = new System.Drawing.Size(54, 34);
             this.label2.TabIndex = 45;
             this.label2.Text = "Display Name:\r\n(optional)";
-            //
+            // 
             // label1
-            //
+            // 
             this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(3, 11);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(92, 13);
+            this.label1.Size = new System.Drawing.Size(54, 13);
             this.label1.TabIndex = 43;
             this.label1.Text = "Splits File:";
-            //
+            // 
             // txtName
-            //
+            // 
             this.txtName.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.tableLayoutPanel1.SetColumnSpan(this.txtName, 4);
-            this.txtName.Location = new System.Drawing.Point(101, 8);
+            this.txtName.Location = new System.Drawing.Point(63, 8);
             this.txtName.Name = "txtName";
             this.txtName.ReadOnly = true;
-            this.txtName.Size = new System.Drawing.Size(317, 20);
+            this.txtName.Size = new System.Drawing.Size(355, 20);
             this.txtName.TabIndex = 44;
-            //
+            // 
             // btnRemoveColumn
-            //
+            // 
             this.btnRemoveColumn.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.btnRemoveColumn.Location = new System.Drawing.Point(361, 115);
             this.btnRemoveColumn.Name = "btnRemoveColumn";
             this.btnRemoveColumn.Size = new System.Drawing.Size(57, 23);
-            this.btnRemoveColumn.TabIndex = 53;
+            this.btnRemoveColumn.TabIndex = 59;
             this.btnRemoveColumn.Text = "Remove";
             this.btnRemoveColumn.UseVisualStyleBackColor = true;
             this.btnRemoveColumn.Click += new System.EventHandler(this.btnRemoveColumn_Click);
-            //
+            // 
             // txtTargetTime
-            //
+            // 
             this.txtTargetTime.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.txtTargetTime.Location = new System.Drawing.Point(101, 80);
-            this.txtTargetTime.Mask = "00:00:00";
+            this.txtTargetTime.Location = new System.Drawing.Point(63, 79);
+            this.txtTargetTime.Mask = "00:00:00.000";
             this.txtTargetTime.Name = "txtTargetTime";
-            this.txtTargetTime.Size = new System.Drawing.Size(50, 20);
-            this.txtTargetTime.TabIndex = 55;
+            this.txtTargetTime.Size = new System.Drawing.Size(72, 20);
+            this.txtTargetTime.TabIndex = 47;
+            this.txtTargetTime.Text = "000000000";
             this.txtTargetTime.TextChanged += new System.EventHandler(this.txtTargetTime_TextChanged);
-            //
+            // 
             // btnAttachToSplits
-            //
+            // 
             this.btnAttachToSplits.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.btnAttachToSplits.Location = new System.Drawing.Point(223, 115);
+            this.btnAttachToSplits.Location = new System.Drawing.Point(222, 115);
             this.btnAttachToSplits.Name = "btnAttachToSplits";
             this.btnAttachToSplits.Size = new System.Drawing.Size(131, 23);
-            this.btnAttachToSplits.TabIndex = 54;
+            this.btnAttachToSplits.TabIndex = 58;
             this.btnAttachToSplits.Text = "Attach to Current Splits";
             this.btnAttachToSplits.UseVisualStyleBackColor = true;
             this.btnAttachToSplits.Click += new System.EventHandler(this.btnAttachToSplits_Click);
-            //
+            // 
             // btnMoveUp
-            //
+            // 
             this.btnMoveUp.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.btnMoveUp.Location = new System.Drawing.Point(101, 115);
+            this.btnMoveUp.Location = new System.Drawing.Point(85, 115);
             this.btnMoveUp.Name = "btnMoveUp";
             this.btnMoveUp.Size = new System.Drawing.Size(50, 23);
             this.btnMoveUp.TabIndex = 56;
             this.btnMoveUp.Text = "Up";
             this.btnMoveUp.UseVisualStyleBackColor = true;
             this.btnMoveUp.Click += new System.EventHandler(this.btnMoveUp_Click);
-            //
+            // 
             // btnMoveDown
-            //
+            // 
             this.btnMoveDown.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.btnMoveDown.Location = new System.Drawing.Point(157, 115);
+            this.btnMoveDown.Location = new System.Drawing.Point(156, 115);
             this.btnMoveDown.Name = "btnMoveDown";
             this.btnMoveDown.Size = new System.Drawing.Size(60, 23);
             this.btnMoveDown.TabIndex = 57;
             this.btnMoveDown.Text = "Down";
             this.btnMoveDown.UseVisualStyleBackColor = true;
             this.btnMoveDown.Click += new System.EventHandler(this.btnMoveDown_Click);
-            //
+            // 
             // label4
-            //
+            // 
             this.label4.AutoSize = true;
+            this.tableLayoutPanel1.SetColumnSpan(this.label4, 2);
             this.label4.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label4.Location = new System.Drawing.Point(157, 72);
+            this.label4.Location = new System.Drawing.Point(141, 70);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(60, 36);
+            this.label4.Size = new System.Drawing.Size(212, 38);
             this.label4.TabIndex = 58;
-            this.label4.Text = "(hh:mm:ss)";
+            this.label4.Text = "(hh:mm:ss.ms)";
             this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            //
+            // 
             // ComparisonSettings
-            //
+            // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.groupComparison);
@@ -214,6 +216,7 @@ namespace LiveSplit.UI.Components
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
             this.ResumeLayout(false);
+
         }
 
         #endregion
