@@ -38,7 +38,7 @@ namespace LiveSplit.TheoryComparisonGenerator.Comparisons
 
         public string SecondaryName { get; set; }
 
-        public string FormattedName => formatName();
+        public virtual string FormattedName => formatName();
 
         public static ComparisonData FromXml(XmlNode node)
         {
@@ -75,7 +75,10 @@ namespace LiveSplit.TheoryComparisonGenerator.Comparisons
             value = value.TrimStart('0').TrimStart(':');
 
             // Remove suffix which are not needed ".   " becomes "" and .100 becomes ".1"
-            value = value.TrimEnd('0').TrimEnd('.');
+            if (value.IndexOf('.') != -1)
+            {
+                value = value.TrimEnd('0').TrimEnd('.');
+            }
 
             return value;
         }
@@ -91,6 +94,31 @@ namespace LiveSplit.TheoryComparisonGenerator.Comparisons
             {
                 return Time.Zero;
             }
+        }
+    }
+
+    public class PBComparisonData : ComparisonData
+    {
+        public PBComparisonData(bool enabled, string secondaryName)
+            : base("", secondaryName, Time.Zero)
+        {
+            Enabled = enabled;
+        }
+
+        public PBComparisonData(PBComparisonData other)
+            : base(other)
+        {
+            Enabled = other.Enabled;
+        }
+
+        public override string FormattedName => formatName();
+
+        public bool Enabled { get; set; }
+
+        private string formatName()
+        {
+            if (SecondaryName != "") return SecondaryName;
+            return "Theory PB";
         }
     }
 }

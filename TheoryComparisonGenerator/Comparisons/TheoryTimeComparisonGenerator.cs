@@ -76,5 +76,10 @@ namespace LiveSplit.TheoryComparisonGenerator.Comparisons
 				Run[idx].Comparisons[Name] = comparisonTime;
 			}
 		}
+
+		public virtual bool ShouldAddToSplits(string splitsName)
+		{
+			return Data != null && Data.SplitsName == splitsName;
+		}
 	}
 }

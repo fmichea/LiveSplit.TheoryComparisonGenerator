@@ -22,6 +22,7 @@ namespace LiveSplit.UI.Components
             Settings = new TheoryComparisonGeneratorSettings(state);
             Settings.OnChange += settings_OnChange;
             Settings.OnChangeComparison += settings_OnChangeComparison;
+            Settings.OnChangePBComparison += settings_OnChangePBComparison;
 
             installedComparisons = new List<string>();
         }
@@ -99,7 +100,14 @@ namespace LiveSplit.UI.Components
 
         private void settings_OnChangeComparison(object sender, ComparisonSettingsChangeEventArgs e)
         {
-            _updateComparisonInPlace(CurrentState, e.PrevData, e.NewData);
+            var generator = new TheoryTimeComparisonGenerator(CurrentState.Run, e.NewData);
+            _updateComparisonInPlace(CurrentState, e.PrevData, e.NewData, generator);
+        }
+
+        private void settings_OnChangePBComparison(object sender, PBComparisonSettingsChangeEventArgs e)
+        {
+            var generator = new TheoryPBComparisonGenerator(CurrentState.Run, e.NewData);
+            _updateComparisonInPlace(CurrentState, e.PrevData, e.NewData, generator);
         }
 
         private void settings_OnChange(object sender, EventArgs e)
@@ -107,7 +115,7 @@ namespace LiveSplit.UI.Components
             _updateAllComparisons(CurrentState);
         }
 
-        private void _updateComparisonInPlace(LiveSplitState state, ComparisonData prevData, ComparisonData newData)
+        private void _updateComparisonInPlace(LiveSplitState state, ComparisonData prevData, ComparisonData newData, TheoryTimeComparisonGenerator generator)
         {
             var prevName = prevData.FormattedName;
             var newSelectedName = prevName;
@@ -115,12 +123,10 @@ namespace LiveSplit.UI.Components
             // First we remove the previous comparison generator from the list.
             _removeComparisonFromRun(state, prevName);
 
-            // If this has new data and the new data is part of the splits currently used, add the comparison generator.
-            if (newData != null && newData.SplitsName == Settings.SplitsName)
+            // If this has new data and the new data is part of the splits currently used, add the comparison
+            // generator. In case of PB theory time, this is true if enabled.
+            if (_addComparisonToRun(state, generator))
             {
-                var theoryComp = new TheoryTimeComparisonGenerator(state.Run, newData);
-                _addComparisonToRun(state, theoryComp);
-
                 newSelectedName = newData.FormattedName;
             }
 
@@ -136,21 +142,11 @@ namespace LiveSplit.UI.Components
 
             _removeAllComparisons(state);
 
-            if (Settings.AutoTheoryPB)
-            {
-                // FIXME: allow changing the name of the theory pb split.
-                var data = new ComparisonData(Settings.SplitsName, Settings.AutoTheoryDisplayName, TimeSpan.Zero.ToString());
-                _addComparisonToRun(state, new TheoryPBComparisonGenerator(run, data));
-            }
+            _addComparisonToRun(state, new TheoryPBComparisonGenerator(run, Settings.TheoryPBData));
 
             foreach (var comparisonSetting in Settings.ComparisonsList)
             {
-                var comparisonData = comparisonSetting.Data;
-
-                // This is a theory time for a different split file.
-                if (comparisonData.SplitsName != Path.GetFileNameWithoutExtension(CurrentState?.Run.FilePath)) continue;
-
-                var comparison = new TheoryTimeComparisonGenerator(run, comparisonData);
+                var comparison = new TheoryTimeComparisonGenerator(run, comparisonSetting.Data);
                 _addComparisonToRun(state, comparison);
             }
 
@@ -182,8 +178,11 @@ namespace LiveSplit.UI.Components
             if (prevComparison != null) state.Run.ComparisonGenerators.Remove(prevComparison);
         }
 
-        private void _addComparisonToRun(LiveSplitState state, IComparisonGenerator generator)
+        private bool _addComparisonToRun(LiveSplitState state, TheoryTimeComparisonGenerator generator)
         {
+            if (!generator.ShouldAddToSplits(Settings.SplitsName))
+                return false;
+
             installedComparisons.Add(generator.Name);
 
             // TODO: Find out why generate is only called after reset, forcing us to call it once on init.
@@ -191,6 +190,8 @@ namespace LiveSplit.UI.Components
 
             // Add comparison generator to the run.
             state.Run.ComparisonGenerators.Add(generator);
+
+            return true;
         }
     }
 }
