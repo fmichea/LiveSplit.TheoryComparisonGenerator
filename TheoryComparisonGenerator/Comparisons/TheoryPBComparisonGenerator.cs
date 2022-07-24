@@ -6,23 +6,22 @@ namespace LiveSplit.TheoryComparisonGenerator.Comparisons
     public class TheoryPBComparisonGenerator : TheoryTimeComparisonGenerator
     {
 
-        public TheoryPBComparisonGenerator(IRun run, ComparisonData data) : base(run, data)
+        public TheoryPBComparisonGenerator(IRun run, PBComparisonData data) : base(run, data)
         {
-        }
-
-        public override string Name
-        {
-            get
-            {
-                if (Data.SecondaryName != "") return Data.SecondaryName;
-                return "Theory PB";
-            }
+            PBData = data;
         }
 
         public override void Generate(ISettings settings)
         {
             Data.TargetT = Run[Run.Count - 1].PersonalBestSplitTime;
             base.Generate(settings);
+        }
+
+        public PBComparisonData PBData { get; protected set; }
+
+        public override bool ShouldAddToSplits(string splitsName)
+        {
+            return PBData != null && PBData.Enabled;
         }
     }
 }
