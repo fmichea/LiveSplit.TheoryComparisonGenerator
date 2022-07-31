@@ -75,10 +75,7 @@ namespace LiveSplit.TheoryComparisonGenerator.Comparisons
             value = value.TrimStart('0').TrimStart(':');
 
             // Remove suffix which are not needed ".   " becomes "" and .100 becomes ".1"
-            if (value.IndexOf('.') != -1)
-            {
-                value = value.TrimEnd('0').TrimEnd('.');
-            }
+            if (value.IndexOf('.') != -1) value = value.TrimEnd('0').TrimEnd('.');
 
             return value;
         }
@@ -87,7 +84,7 @@ namespace LiveSplit.TheoryComparisonGenerator.Comparisons
         {
             try
             {
-               var timeSpan = TimeSpan.Parse(target);
+                var timeSpan = TimeSpan.Parse(target);
                 return new Time(timeSpan, timeSpan);
             }
             catch
@@ -99,6 +96,8 @@ namespace LiveSplit.TheoryComparisonGenerator.Comparisons
 
     public class PBComparisonData : ComparisonData
     {
+        public static PBComparisonData Default = new PBComparisonData(false, "");
+
         public PBComparisonData(bool enabled, string secondaryName)
             : base("", secondaryName, Time.Zero)
         {
