@@ -25,24 +25,39 @@ namespace LiveSplit.UI.Components
             ShowAll = false;
             TheoryPBData = PBComparisonData.Default;
             TheoryTimesFilePath = null;
+
+            // All events related to changes to internal data cause callbackt to be called to save to file.
+            OnChange += _theoryTimesConfiguration_OnChange;
+            OnChangeComparison += _theoryTimesConfiguration_OnChange;
+            OnChangePBComparison += _theoryTimesConfiguration_OnChange;
         }
 
         public Size StartingSize { get; set; }
         public Size StartingTableLayoutSize { get; set; }
         public LiveSplitState CurrentState { get; set; }
 
-        public PBComparisonData TheoryPBData { get; set; }
+        public PBComparisonData TheoryPBData
+        {
+            get { return _theoryPBData; }
+            set
+            {
+                _theoryPBData = value; // Important to do this first so event callbacks do not loop.
+                checkboxAutomaticPBComp.Checked = value.Enabled;
+                txtTheoryPBAltName.Text = value.SecondaryName;
+            }
+        }
+        public PBComparisonData _theoryPBData { get; set; }
 
         public string TheoryTimesFilePath
         {
             get => _theoryTimesFilePath;
             protected set
             {
-                txtTheoryTimesPath.Text = _theoryTimesFilePath = value;
-                toggleViewFileLoaded(value);
+                _theoryTimesFilePath = value; // Important to do this first so event callbacks do not loop.
+                txtTheoryTimesPath.Text = value;
+                _toggleViewFileLoaded(value);
             }
         }
-
         private string _theoryTimesFilePath { get; set; }
 
         public FileSystemWatcher TheoryTimesFileWatcher { get; set; }
@@ -96,11 +111,18 @@ namespace LiveSplit.UI.Components
             if (theoryTimeFile.Length == 0)
                 return true;
 
-            var document = new XmlDocument();
-            document.LoadXml(theoryTimeFile);
+            try
+            {
+                var document = new XmlDocument();
+                document.LoadXml(theoryTimeFile);
 
-            var elements = document.GetElementsByTagName("TheoryTimesConfig");
-            return elements.Count == 1;
+                var elements = document.GetElementsByTagName("TheoryTimesConfig");
+                return elements.Count == 1;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         private int _createTheoryTimeFileSettings(XmlDocument document, XmlElement parent)
@@ -153,7 +175,6 @@ namespace LiveSplit.UI.Components
             ComparisonsList.Insert(index + 1, column);
             ResetComparisons();
             column.SelectControl();
-            _writeTheoryTimesFilePath();
             OnChange?.Invoke(this, null);
         }
 
@@ -165,7 +186,6 @@ namespace LiveSplit.UI.Components
             ComparisonsList.Insert(index - 1, column);
             ResetComparisons();
             column.SelectControl();
-            _writeTheoryTimesFilePath();
             OnChange?.Invoke(this, null);
         }
 
@@ -177,7 +197,6 @@ namespace LiveSplit.UI.Components
             ResetComparisons();
             if (ComparisonsList.Count > 0)
                 ComparisonsList.Last().SelectControl();
-            _writeTheoryTimesFilePath();
             OnChange?.Invoke(this, null);
         }
 
@@ -223,14 +242,12 @@ namespace LiveSplit.UI.Components
             AddColumnToLayout(comparisonControl, ComparisonsList.Count);
             foreach (var comparison in ComparisonsList)
                 comparison.UpdateEnabledButtons();
-            _writeTheoryTimesFilePath();
             OnChange?.Invoke(this, null);
         }
 
         private void TheoryComparisonGeneratorSettings_Load(object sender, EventArgs e)
         {
             SplitsName = Path.GetFileNameWithoutExtension(CurrentState?.Run.FilePath);
-            _updateTheoryPBViewFields();
             ResetComparisons();
         }
 
@@ -246,23 +263,29 @@ namespace LiveSplit.UI.Components
 
         private void checkboxAutomaticPBComp_CheckedChanged(object sender, EventArgs e)
         {
+            var newChecked = checkboxAutomaticPBComp.Checked;
+            if (newChecked == TheoryPBData.Enabled)
+                return;
+
             var prevData = TheoryPBData;
-            TheoryPBData = new PBComparisonData(TheoryPBData) { Enabled = checkboxAutomaticPBComp.Checked };
-            _writeTheoryTimesFilePath();
+            TheoryPBData = new PBComparisonData(TheoryPBData) { Enabled = newChecked };
             OnChangePBComparison?.Invoke(this, new PBComparisonSettingsChangeEventArgs(prevData, TheoryPBData));
         }
 
         private void txtTheoryPBAltName_TextChanged(object sender, EventArgs e)
         {
+            var newText = txtTheoryPBAltName.Text;
+
+            if (newText == TheoryPBData.SecondaryName)
+                return;
+
             var prevData = TheoryPBData;
-            TheoryPBData = new PBComparisonData(TheoryPBData) { SecondaryName = txtTheoryPBAltName.Text };
-            _writeTheoryTimesFilePath();
+            TheoryPBData = new PBComparisonData(TheoryPBData) { SecondaryName = newText };
             OnChangePBComparison?.Invoke(this, new PBComparisonSettingsChangeEventArgs(prevData, TheoryPBData));
         }
 
         private void comparisonSettings_OnChange(object sender, ComparisonSettingsChangeEventArgs e)
         {
-            _writeTheoryTimesFilePath();
             OnChangeComparison?.Invoke(this, e);
         }
 
@@ -294,8 +317,6 @@ namespace LiveSplit.UI.Components
                 dialog.FileName = Path.GetFileName(TheoryTimesFilePath);
             }
 
-            // TODO: add safety to not overwrite random files. Limit to files empty or already .lstt contents?
-
             if (dialog.ShowDialog() == DialogResult.OK) _updateTheoryTimesFilePath(dialog.FileName);
         }
 
@@ -303,8 +324,6 @@ namespace LiveSplit.UI.Components
         {
             if (TheoryTimesFilePath == null)
                 return;
-
-            var contentsStream = new MemoryStream();
 
             var document = new XmlDocument();
 
@@ -316,15 +335,22 @@ namespace LiveSplit.UI.Components
 
             _createTheoryTimeFileSettings(document, parent);
 
-            document.Save(contentsStream);
+            using (var contentsStream = new MemoryStream())
+            {
+                document.Save(contentsStream);
 
-            _writeTheoryTimesFileIfChanged(contentsStream.ToString());
+                contentsStream.Seek(0, SeekOrigin.Begin);
+                using (StreamReader reader = new StreamReader(contentsStream))
+                {
+                    _writeTheoryTimesFileIfChanged(reader.ReadToEnd());
+                }
+            }
         }
 
         private void _writeTheoryTimesFileIfChanged(string contents)
         {
             var currentContents = File.ReadAllText(TheoryTimesFilePath);
-            if (currentContents != contents)
+            if (currentContents == contents)
                 return;
 
             File.WriteAllText(TheoryTimesFilePath, contents);
@@ -342,7 +368,6 @@ namespace LiveSplit.UI.Components
 
             _loadTheoryTimesFilePath(filePath);
 
-            _updateTheoryPBViewFields();
             ResetComparisons();
 
             TheoryTimesFileWatcher = new FileSystemWatcher(Path.GetDirectoryName(filePath));
@@ -396,13 +421,9 @@ namespace LiveSplit.UI.Components
                 ComparisonsList.Add(comparisonControl);
             }
 
-            return true;
-        }
+            OnChange?.Invoke(this, null);
 
-        private void _updateTheoryPBViewFields()
-        {
-            checkboxAutomaticPBComp.Checked = TheoryPBData.Enabled;
-            txtTheoryPBAltName.Text = TheoryPBData.SecondaryName;
+            return true;
         }
 
         private void _theoryTimesFile_OnChange(object sender, FileSystemEventArgs e)
@@ -433,11 +454,12 @@ namespace LiveSplit.UI.Components
             TheoryPBData = PBComparisonData.Default;
             ComparisonsList.Clear();
 
-            _updateTheoryPBViewFields();
             ResetComparisons();
+
+            OnChange?.Invoke(this, null);
         }
 
-        private void toggleViewFileLoaded(string value)
+        private void _toggleViewFileLoaded(string value)
         {
             var hasFileLoaded = value != null;
 
@@ -446,6 +468,11 @@ namespace LiveSplit.UI.Components
             checkboxAutomaticPBComp.Enabled = hasFileLoaded;
             btnAddComparison.Enabled = hasFileLoaded;
             btnShowAll.Enabled = hasFileLoaded;
+        }
+
+        private void _theoryTimesConfiguration_OnChange(object sender, EventArgs args)
+        {
+            _writeTheoryTimesFilePath();
         }
     }
 

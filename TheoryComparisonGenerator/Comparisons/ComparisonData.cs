@@ -96,7 +96,7 @@ namespace LiveSplit.TheoryComparisonGenerator.Comparisons
 
     public class PBComparisonData : ComparisonData
     {
-        public static PBComparisonData Default = new PBComparisonData(false, "");
+        public static PBComparisonData Default = new PBComparisonData(true, "");
 
         public PBComparisonData(bool enabled, string secondaryName)
             : base("", secondaryName, Time.Zero)
