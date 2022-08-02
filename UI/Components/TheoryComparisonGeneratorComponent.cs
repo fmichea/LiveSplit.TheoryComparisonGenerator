@@ -71,6 +71,8 @@ namespace LiveSplit.UI.Components
 
         public void Update(IInvalidator invalidator, LiveSplitState state, float width, float height, LayoutMode mode)
         {
+            Settings.CurrentState = state;
+
             // FIXME: why does this not use CurrentState?
             if (previousRun != state.Run)
             {
