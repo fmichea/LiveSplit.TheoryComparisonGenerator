@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -20,7 +21,7 @@ namespace LiveSplit.UI.Components
             CurrentState = state;
             SplitsName = Path.GetFileNameWithoutExtension(CurrentState?.Run.FilePath);
             StartingSize = Size;
-            StartingTableLayoutSize = tableComparisons.Size + tableLayoutPanel2.Size;
+            StartingTableLayoutSize = tableComparisons.Size;
             ComparisonsList = new List<ComparisonSettings>();
             ShowAll = false;
             TheoryPBData = PBComparisonData.Default;
@@ -155,7 +156,7 @@ namespace LiveSplit.UI.Components
             return hashCode;
         }
 
-        private void AddColumnToLayout(ComparisonSettings comparison, int index)
+        void AddColumnToLayout(ComparisonSettings comparison, int index)
         {
             tableComparisons.Controls.Add(comparison, 0, index);
             tableComparisons.SetColumnSpan(comparison, 4);
@@ -166,8 +167,7 @@ namespace LiveSplit.UI.Components
             comparison.MovedUp += column_MovedUp;
             comparison.MovedDown += column_MovedDown;
         }
-
-        private void column_MovedDown(object sender, EventArgs e)
+        void column_MovedDown(object sender, EventArgs e)
         {
             var column = (ComparisonSettings)sender;
             var index = ComparisonsList.IndexOf(column);
@@ -177,8 +177,7 @@ namespace LiveSplit.UI.Components
             column.SelectControl();
             OnChange?.Invoke(this, null);
         }
-
-        private void column_MovedUp(object sender, EventArgs e)
+        void column_MovedUp(object sender, EventArgs e)
         {
             var column = (ComparisonSettings)sender;
             var index = ComparisonsList.IndexOf(column);
@@ -188,8 +187,7 @@ namespace LiveSplit.UI.Components
             column.SelectControl();
             OnChange?.Invoke(this, null);
         }
-
-        private void column_ColumnRemoved(object sender, EventArgs e)
+        void column_ColumnRemoved(object sender, EventArgs e)
         {
             var comparison = (ComparisonSettings)sender;
             var index = ComparisonsList.IndexOf(comparison);
@@ -275,7 +273,6 @@ namespace LiveSplit.UI.Components
         private void txtTheoryPBAltName_TextChanged(object sender, EventArgs e)
         {
             var newText = txtTheoryPBAltName.Text;
-
             if (newText == TheoryPBData.SecondaryName)
                 return;
 
@@ -349,9 +346,14 @@ namespace LiveSplit.UI.Components
 
         private void _writeTheoryTimesFileIfChanged(string contents)
         {
-            var currentContents = File.ReadAllText(TheoryTimesFilePath);
-            if (currentContents == contents)
-                return;
+            try
+            {
+                var currentContents = File.ReadAllText(TheoryTimesFilePath);
+                if (currentContents == contents)
+                    return;
+            }
+            catch (IOException e)
+            { }
 
             File.WriteAllText(TheoryTimesFilePath, contents);
         }
@@ -360,8 +362,10 @@ namespace LiveSplit.UI.Components
         {
             if (TheoryTimesFileWatcher != null)
             {
+                TheoryTimesFileWatcher.EnableRaisingEvents = false;
                 TheoryTimesFileWatcher.Changed -= _theoryTimesFile_OnChange;
                 TheoryTimesFileWatcher.Renamed -= _theoryTimesFile_OnRenamed;
+                TheoryTimesFileWatcher = null;
             }
 
             TheoryTimesFilePath = filePath;
@@ -370,11 +374,17 @@ namespace LiveSplit.UI.Components
 
             ResetComparisons();
 
-            TheoryTimesFileWatcher = new FileSystemWatcher(Path.GetDirectoryName(filePath));
-            TheoryTimesFileWatcher.NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite;
+            var directory = Path.GetDirectoryName(filePath);
+            if (directory != null)
+            {
+                TheoryTimesFileWatcher = new FileSystemWatcher(directory);
+                TheoryTimesFileWatcher.NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite;
 
-            TheoryTimesFileWatcher.Changed += _theoryTimesFile_OnChange;
-            TheoryTimesFileWatcher.Renamed += _theoryTimesFile_OnRenamed;
+                TheoryTimesFileWatcher.Changed += _theoryTimesFile_OnChange;
+                TheoryTimesFileWatcher.Renamed += _theoryTimesFile_OnRenamed;
+
+                TheoryTimesFileWatcher.EnableRaisingEvents = true;
+            }
 
             OnChange?.Invoke(this, null);
         }
@@ -392,38 +402,45 @@ namespace LiveSplit.UI.Components
             if (fileContents.Length == 0)
                 return true;
 
-            var document = new XmlDocument();
-            document.LoadXml(fileContents);
-
-            var elements = document.GetElementsByTagName("TheoryTimesConfig");
-            if (elements.Count != 1)
-                return false;
-
-            var element = elements[0];
-
-            TheoryPBData = new PBComparisonData(TheoryPBData)
+            try
             {
-                Enabled = SettingsHelper.ParseBool(element["AutoTheoryPB"]),
-                SecondaryName = SettingsHelper.ParseString(element["AutoTheoryDisplayName"])
-            };
+                var document = new XmlDocument();
+                document.LoadXml(fileContents);
 
-            var comparisonsElement = element["Comparisons"];
-            if (comparisonsElement == null)
+                var elements = document.GetElementsByTagName("TheoryTimesConfig");
+                if (elements.Count != 1)
+                    return false;
+
+                var element = elements[0];
+
+                TheoryPBData = new PBComparisonData(TheoryPBData)
+                {
+                    Enabled = SettingsHelper.ParseBool(element["AutoTheoryPB"]),
+                    SecondaryName = SettingsHelper.ParseString(element["AutoTheoryDisplayName"])
+                };
+
+                var comparisonsElement = element["Comparisons"];
+                if (comparisonsElement == null)
+                    return true;
+
+                foreach (var child in comparisonsElement.ChildNodes)
+                {
+                    var comparisonData = ComparisonData.FromXml((XmlNode)child);
+
+                    var comparisonControl = new ComparisonSettings(CurrentState, comparisonData.SplitsName, ComparisonsList)
+                        { Data = comparisonData };
+                    comparisonControl.OnChange += comparisonSettings_OnChange;
+                    ComparisonsList.Add(comparisonControl);
+                }
+
+                OnChange?.Invoke(this, null);
+
                 return true;
-
-            foreach (var child in comparisonsElement.ChildNodes)
-            {
-                var comparisonData = ComparisonData.FromXml((XmlNode)child);
-
-                var comparisonControl = new ComparisonSettings(CurrentState, comparisonData.SplitsName, ComparisonsList)
-                    { Data = comparisonData };
-                comparisonControl.OnChange += comparisonSettings_OnChange;
-                ComparisonsList.Add(comparisonControl);
             }
-
-            OnChange?.Invoke(this, null);
-
-            return true;
+            catch
+            {
+                return false;
+            }
         }
 
         private void _theoryTimesFile_OnChange(object sender, FileSystemEventArgs e)
@@ -431,21 +448,18 @@ namespace LiveSplit.UI.Components
             if (e.FullPath != TheoryTimesFilePath)
                 return;
 
-            switch (e.ChangeType)
-            {
-                case WatcherChangeTypes.Changed:
-                    break;
+            if (e.ChangeType != WatcherChangeTypes.Changed)
+                return;
 
-                case WatcherChangeTypes.Renamed:
-                    break;
-            }
+            _loadTheoryTimesFilePath(TheoryTimesFilePath);
         }
 
         private void _theoryTimesFile_OnRenamed(object sender, RenamedEventArgs e)
         {
-            Console.WriteLine("Renamed:");
-            Console.WriteLine($"    Old: {e.OldFullPath}");
-            Console.WriteLine($"    New: {e.FullPath}");
+            if (e.OldFullPath != TheoryTimesFilePath)
+                return;
+
+            _updateTheoryTimesFilePath(e.FullPath);
         }
 
         private void btnUnload_Click(object sender, EventArgs e)
