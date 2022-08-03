@@ -18,7 +18,6 @@ namespace LiveSplit.UI.Components
             InitializeComponent();
 
             CurrentState = state;
-            SplitsName = Path.GetFileNameWithoutExtension(CurrentState?.Run.FilePath);
             StartingSize = Size;
             StartingTableLayoutSize = tableComparisons.Size;
             ComparisonsList = new List<ComparisonSettings>();
@@ -34,7 +33,17 @@ namespace LiveSplit.UI.Components
 
         public Size StartingSize { get; set; }
         public Size StartingTableLayoutSize { get; set; }
-        public LiveSplitState CurrentState { get; set; }
+
+        public LiveSplitState CurrentState
+        {
+            get { return _currentState; }
+            set {
+                _currentState = value;
+                SplitsName = Path.GetFileNameWithoutExtension(value?.Run.FilePath);
+            }
+        }
+        private LiveSplitState _currentState { get; set; }
+        public string SplitsName { get; set; }
 
         public PBComparisonData TheoryPBData
         {
@@ -62,7 +71,6 @@ namespace LiveSplit.UI.Components
 
         public FileSystemWatcher TheoryTimesFileWatcher { get; set; }
 
-        public string SplitsName { get; set; }
 
         public IList<ComparisonSettings> ComparisonsList { get; set; }
 
