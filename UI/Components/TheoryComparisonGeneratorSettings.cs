@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
 using LiveSplit.Model;
@@ -51,8 +52,7 @@ namespace LiveSplit.UI.Components
             set
             {
                 _theoryPBData = value; // Important to do this first so event callbacks do not loop.
-                checkboxAutomaticPBComp.Checked = value.Enabled;
-                txtTheoryPBAltName.Text = value.SecondaryName;
+                _updateTheoryPBDataUI(value);
             }
         }
         public PBComparisonData _theoryPBData { get; set; }
@@ -63,8 +63,7 @@ namespace LiveSplit.UI.Components
             protected set
             {
                 _theoryTimesFilePath = value; // Important to do this first so event callbacks do not loop.
-                txtTheoryTimesPath.Text = value;
-                _toggleViewFileLoaded(value);
+                _updateTheoryTimeFilePathUI(value);
             }
         }
         private string _theoryTimesFilePath { get; set; }
@@ -75,6 +74,8 @@ namespace LiveSplit.UI.Components
         public IList<ComparisonSettings> ComparisonsList { get; set; }
 
         private bool ShowAll { get; set; }
+
+        private string LoadedFileContents { get; set; }
 
         public event EventHandler OnChange;
         public event EventHandler<PBComparisonSettingsChangeEventArgs> OnChangePBComparison;
@@ -205,29 +206,49 @@ namespace LiveSplit.UI.Components
             OnChange?.Invoke(this, null);
         }
 
+        private delegate void ResetComparisonsDelegate();
+
         private void ResetComparisons()
         {
-            ClearLayout();
-            var index = 1;
-            foreach (var comparison in ComparisonsList)
-                if (comparison.Data.SplitsName == SplitsName || ShowAll)
-                {
-                    UpdateLayoutForColumn();
-                    AddColumnToLayout(comparison, index);
-                    comparison.UpdateEnabledButtons();
-                    index++;
-                }
+            if (InvokeRequired)
+            {
+                ResetComparisonsDelegate d = new ResetComparisonsDelegate(ResetComparisons);
+                Invoke(d, new object[] { });
+            }
+            else
+            {
+                ClearLayout();
+                var index = 1;
+                foreach (var comparison in ComparisonsList)
+                    if (comparison.Data.SplitsName == SplitsName || ShowAll)
+                    {
+                        UpdateLayoutForColumn();
+                        AddColumnToLayout(comparison, index);
+                        comparison.UpdateEnabledButtons();
+                        index++;
+                    }
+            }
         }
+
+        private delegate void ClearLayoutDelegate();
 
         private void ClearLayout()
         {
-            tableComparisons.RowCount = 1;
-            tableComparisons.RowStyles.Clear();
-            tableComparisons.RowStyles.Add(new RowStyle(SizeType.Absolute, 34f));
-            tableComparisons.Size = StartingTableLayoutSize;
-            foreach (var control in tableComparisons.Controls.OfType<ComparisonSettings>().ToList())
-                tableComparisons.Controls.Remove(control);
-            Size = StartingSize;
+            if (InvokeRequired)
+            {
+                ClearLayoutDelegate d = new ClearLayoutDelegate(ClearLayout);
+                Invoke(d, new object[] { });
+            }
+            else
+            {
+                tableComparisons.RowCount = 1;
+                tableComparisons.RowStyles.Clear();
+                tableComparisons.RowStyles.Add(new RowStyle(SizeType.Absolute, 34f));
+                tableComparisons.Size = StartingTableLayoutSize;
+                foreach (var control in tableComparisons.Controls.OfType<ComparisonSettings>().ToList())
+                    tableComparisons.Controls.Remove(control);
+                Size = StartingSize;
+            }
         }
 
         private void UpdateLayoutForColumn()
@@ -362,6 +383,7 @@ namespace LiveSplit.UI.Components
             catch (IOException e)
             { }
 
+            LoadedFileContents = contents;
             File.WriteAllText(TheoryTimesFilePath, contents);
         }
 
@@ -379,8 +401,6 @@ namespace LiveSplit.UI.Components
 
             _loadTheoryTimesFilePath(filePath);
 
-            ResetComparisons();
-
             var directory = Path.GetDirectoryName(filePath);
             if (directory != null)
             {
@@ -392,22 +412,41 @@ namespace LiveSplit.UI.Components
 
                 TheoryTimesFileWatcher.EnableRaisingEvents = true;
             }
-
-            OnChange?.Invoke(this, null);
         }
 
         private bool _loadTheoryTimesFilePath(string filePath)
         {
-            TheoryPBData = PBComparisonData.Default;
-            ComparisonsList.Clear();
-
             if (!File.Exists(filePath))
                 return false;
 
-            var fileContents = File.ReadAllText(filePath);
+            string fileContents = "";
+            int maxRetries = 5;
+
+            for (int idx = 0; idx < maxRetries; idx++)
+            {
+                try
+                {
+                    fileContents = File.ReadAllText(filePath);
+                }
+                catch (IOException e)
+                {
+                    if (idx == maxRetries - 1)
+                        throw;
+                }
+
+                Thread.Sleep(TimeSpan.FromMilliseconds(20));
+            }
+
+            if (fileContents == LoadedFileContents)
+                return false;
+
+            LoadedFileContents = fileContents;
 
             if (fileContents.Length == 0)
                 return true;
+
+            TheoryPBData = PBComparisonData.Default;
+            ComparisonsList.Clear();
 
             try
             {
@@ -434,8 +473,9 @@ namespace LiveSplit.UI.Components
                 {
                     var comparisonData = ComparisonData.FromXml((XmlNode)child);
 
-                    var comparisonControl = new ComparisonSettings(CurrentState, comparisonData.SplitsName, ComparisonsList)
-                        { Data = comparisonData };
+                    var comparisonControl =
+                        new ComparisonSettings(CurrentState, comparisonData.SplitsName, ComparisonsList)
+                            { Data = comparisonData };
                     comparisonControl.OnChange += comparisonSettings_OnChange;
                     ComparisonsList.Add(comparisonControl);
                 }
@@ -447,6 +487,10 @@ namespace LiveSplit.UI.Components
             catch
             {
                 return false;
+            }
+            finally
+            {
+                ResetComparisons();
             }
         }
 
@@ -480,15 +524,42 @@ namespace LiveSplit.UI.Components
             OnChange?.Invoke(this, null);
         }
 
-        private void _toggleViewFileLoaded(string value)
-        {
-            var hasFileLoaded = value != null;
+        private delegate void _updateTheoryTimeFileUIDelegate(string value);
 
-            btnUnload.Enabled = hasFileLoaded;
-            txtTheoryPBAltName.Enabled = hasFileLoaded;
-            checkboxAutomaticPBComp.Enabled = hasFileLoaded;
-            btnAddComparison.Enabled = hasFileLoaded;
-            btnShowAll.Enabled = hasFileLoaded;
+        private void _updateTheoryTimeFilePathUI(string value)
+        {
+            if (InvokeRequired)
+            {
+                _updateTheoryTimeFileUIDelegate d = new _updateTheoryTimeFileUIDelegate(_updateTheoryTimeFilePathUI);
+                Invoke(d, new object[] { value });
+            }
+            else
+            {
+                var hasFileLoaded = value != null;
+
+                txtTheoryTimesPath.Text = value;
+                btnUnload.Enabled = hasFileLoaded;
+                txtTheoryPBAltName.Enabled = hasFileLoaded;
+                checkboxAutomaticPBComp.Enabled = hasFileLoaded;
+                btnAddComparison.Enabled = hasFileLoaded;
+                btnShowAll.Enabled = hasFileLoaded;
+            }
+        }
+
+        private delegate void _updateTheoryPBDataUIDelegate(PBComparisonData value);
+
+        private void _updateTheoryPBDataUI(PBComparisonData value)
+        {
+            if (InvokeRequired)
+            {
+                _updateTheoryPBDataUIDelegate d = new _updateTheoryPBDataUIDelegate(_updateTheoryPBDataUI);
+                Invoke(d, new object[] { value });
+            }
+            else
+            {
+                checkboxAutomaticPBComp.Checked = value.Enabled;
+                txtTheoryPBAltName.Text = value.SecondaryName;
+            }
         }
 
         private void _theoryTimesConfiguration_OnChange(object sender, EventArgs args)
