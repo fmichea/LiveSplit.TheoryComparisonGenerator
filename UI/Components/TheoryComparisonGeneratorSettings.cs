@@ -10,6 +10,11 @@ using System.Xml;
 using LiveSplit.Model;
 using LiveSplit.TheoryComparisonGenerator.Comparisons;
 
+// FIXME:
+// - Lock file might not release clean every time.
+// - Text box not reset when saying no on save even tho it should load back from file.
+// - Cancel on main window when asking to save does not close window.
+
 namespace LiveSplit.UI.Components
 {
     public partial class TheoryComparisonGeneratorSettings : UserControl
@@ -31,6 +36,8 @@ namespace LiveSplit.UI.Components
             OnChangeComparison += _theoryTimesConfiguration_OnChange;
             OnChangePBComparison += _theoryTimesConfiguration_OnChange;
         }
+
+        public bool HasChanged { get; set; }
 
         public Size StartingSize { get; set; }
         public Size StartingTableLayoutSize { get; set; }
@@ -69,7 +76,6 @@ namespace LiveSplit.UI.Components
         private string _theoryTimesFilePath { get; set; }
 
         public FileSystemWatcher TheoryTimesFileWatcher { get; set; }
-
 
         public IList<ComparisonSettings> ComparisonsList { get; set; }
 
@@ -271,10 +277,101 @@ namespace LiveSplit.UI.Components
             OnChange?.Invoke(this, null);
         }
 
+        private FileStream fileLock { get; set; }
+
         private void TheoryComparisonGeneratorSettings_Load(object sender, EventArgs e)
         {
-            SplitsName = Path.GetFileNameWithoutExtension(CurrentState?.Run.FilePath);
-            ResetComparisons();
+            Parent.CausesValidation = true;
+            Parent.Enter += _theoryComparisonGeneratorSettings_Enter;
+            Parent.Leave += _theoryComparisonGeneratorSettings_Leave;
+
+            _theoryComparisonGeneratorSettings_Enter(sender, e);
+        }
+
+        private void _theoryComparisonGeneratorSettings_Enter(object sender, EventArgs e)
+        {
+            HasChanged = false;
+            _removeTheoryTimesFileWatcher();
+            _lockFileAndUpdateUI();
+        }
+
+        private void _showErrorMessageFileAlreadyOpen()
+        {
+            labelErrorFileOpen.Visible = true;
+            groupComparisons.Visible = false;
+            groupBoxGeneralSettings.Visible = false;
+        }
+
+        private void _showTheoryTimesFileSettings()
+        {
+            labelErrorFileOpen.Visible = false;
+            groupComparisons.Visible = true;
+            groupBoxGeneralSettings.Visible = true;
+        }
+
+        private string TheoryTimesFilePathLock
+        {
+            get { return TheoryTimesFilePath + ".lock";  }
+        }
+
+        private bool _lockFileAndUpdateUI()
+        {
+            try
+            {
+                if (TheoryTimesFilePath == null)
+                    return false;
+
+                fileLock = new FileStream(TheoryTimesFilePathLock, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+
+                _showTheoryTimesFileSettings();
+                ResetComparisons();
+
+                return true;
+            }
+            catch (IOException e)
+            {
+                _showErrorMessageFileAlreadyOpen();
+                return false;
+            }
+        }
+
+        private void _unlockFile()
+        {
+            if (fileLock != null)
+            {
+                fileLock.Close();
+                fileLock = null;
+
+                File.Delete(TheoryTimesFilePathLock);
+            }
+        }
+
+        private void _theoryComparisonGeneratorSettings_Leave(object sender, EventArgs e)
+        {
+            var shouldSave = false;
+
+            if (HasChanged)
+            {
+                var result = MessageBox.Show(
+                    "Would you like to save changes made to theory times file?",
+                    "Save Changes",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question
+                );
+
+                shouldSave = result == DialogResult.Yes;
+            }
+
+            if (fileLock != null)
+            {
+                if (shouldSave)
+                    _writeTheoryTimesFilePath();
+                else
+                    _loadTheoryTimesFilePath(TheoryTimesFilePath);
+            }
+
+            _unlockFile();
+            _addTheoryTimesFileWatcher();
         }
 
         private void btnShowAll_Click(object sender, EventArgs e)
@@ -389,19 +486,33 @@ namespace LiveSplit.UI.Components
 
         private void _updateTheoryTimesFilePath(string filePath)
         {
-            if (TheoryTimesFileWatcher != null)
-            {
-                TheoryTimesFileWatcher.EnableRaisingEvents = false;
-                TheoryTimesFileWatcher.Changed -= _theoryTimesFile_OnChange;
-                TheoryTimesFileWatcher.Renamed -= _theoryTimesFile_OnRenamed;
-                TheoryTimesFileWatcher = null;
-            }
+            bool wasLocked = fileLock != null;
+            bool hadWatch = _removeTheoryTimesFileWatcher();
 
+            if (wasLocked) _unlockFile();
             TheoryTimesFilePath = filePath;
+            if (wasLocked) _lockFileAndUpdateUI();
 
             _loadTheoryTimesFilePath(filePath);
 
-            var directory = Path.GetDirectoryName(filePath);
+            if (hadWatch) _addTheoryTimesFileWatcher();
+        }
+
+        private bool _removeTheoryTimesFileWatcher()
+        {
+            if (TheoryTimesFileWatcher == null) return false;
+
+            TheoryTimesFileWatcher.EnableRaisingEvents = false;
+            TheoryTimesFileWatcher.Changed -= _theoryTimesFile_OnChange;
+            TheoryTimesFileWatcher.Renamed -= _theoryTimesFile_OnRenamed;
+            TheoryTimesFileWatcher = null;
+
+            return true;
+        }
+
+        private void _addTheoryTimesFileWatcher()
+        {
+            var directory = Path.GetDirectoryName(TheoryTimesFilePath);
             if (directory != null)
             {
                 TheoryTimesFileWatcher = new FileSystemWatcher(directory);
@@ -564,7 +675,7 @@ namespace LiveSplit.UI.Components
 
         private void _theoryTimesConfiguration_OnChange(object sender, EventArgs args)
         {
-            _writeTheoryTimesFilePath();
+            HasChanged = true;
         }
     }
 
