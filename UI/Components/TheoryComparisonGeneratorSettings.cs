@@ -9,10 +9,10 @@ using System.Windows.Forms;
 using System.Xml;
 using LiveSplit.Model;
 using LiveSplit.TheoryComparisonGenerator.Comparisons;
-
+using LiveSplit.View;
 // FIXME:
-// - Lock file might not release clean every time.
-// - Text box not reset when saying no on save even tho it should load back from file.
+// - Lock file might not release clean every time. Think this has to do with unloading splits file, doesn't close the lock. Looks for wrong path.
+// - Text box not reset when saying no on save even tho it should load back from file. LoadedFileContents is the same as File contents
 // - Cancel on main window when asking to save does not close window.
 
 namespace LiveSplit.UI.Components
@@ -45,7 +45,8 @@ namespace LiveSplit.UI.Components
         public LiveSplitState CurrentState
         {
             get { return _currentState; }
-            set {
+            set
+            {
                 _currentState = value;
                 SplitsName = Path.GetFileNameWithoutExtension(value?.Run.FilePath);
             }
@@ -284,8 +285,8 @@ namespace LiveSplit.UI.Components
             Parent.CausesValidation = true;
             Parent.Enter += _theoryComparisonGeneratorSettings_Enter;
             Parent.Leave += _theoryComparisonGeneratorSettings_Leave;
-
-            _theoryComparisonGeneratorSettings_Enter(sender, e);
+            ParentForm.FormClosing += _LayoutSettingsClosed;
+            //_theoryComparisonGeneratorSettings_Enter(sender, e);
         }
 
         private void _theoryComparisonGeneratorSettings_Enter(object sender, EventArgs e)
@@ -311,7 +312,7 @@ namespace LiveSplit.UI.Components
 
         private string TheoryTimesFilePathLock
         {
-            get { return TheoryTimesFilePath + ".lock";  }
+            get { return TheoryTimesFilePath + ".lock"; }
         }
 
         private bool _lockFileAndUpdateUI()
@@ -345,33 +346,43 @@ namespace LiveSplit.UI.Components
                 File.Delete(TheoryTimesFilePathLock);
             }
         }
-
-        private void _theoryComparisonGeneratorSettings_Leave(object sender, EventArgs e)
+        private void _LayoutSettingsClosed(object sender, EventArgs e)
         {
             var shouldSave = false;
 
-            if (HasChanged)
-            {
-                var result = MessageBox.Show(
-                    "Would you like to save changes made to theory times file?",
-                    "Save Changes",
-                    MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Question
-                );
+                if (HasChanged)
+                {
+                    var result = MessageBox.Show(
+                        "Would you like to save changes made to the theory times file?",
+                        "Save Changes",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Question
+                    );
 
-                shouldSave = result == DialogResult.Yes;
-            }
+                    shouldSave = result == DialogResult.Yes;
+                }
 
-            if (fileLock != null)
-            {
-                if (shouldSave)
+                if (fileLock != null)
+                {
+                    if (shouldSave)
+                        _writeTheoryTimesFilePath();
+                    else
+                        _loadTheoryTimesFilePath(TheoryTimesFilePath);
+                }
+                else if (shouldSave && !string.IsNullOrEmpty(TheoryTimesFilePath) && !File.Exists(TheoryTimesFilePath))
+                {
                     _writeTheoryTimesFilePath();
-                else
-                    _loadTheoryTimesFilePath(TheoryTimesFilePath);
-            }
-
-            _unlockFile();
+                }
+            
             _addTheoryTimesFileWatcher();
+            _unlockFile();
+            LoadedFileContents = null;
+
+        }
+        private void _theoryComparisonGeneratorSettings_Leave(object sender, EventArgs e)
+        {
+            _unlockFile();
+            LoadedFileContents = null;
         }
 
         private void btnShowAll_Click(object sender, EventArgs e)
@@ -419,7 +430,7 @@ namespace LiveSplit.UI.Components
                 CheckFileExists = false
             };
 
-            dialog.FileOk += delegate(object s, CancelEventArgs ev)
+            dialog.FileOk += delegate (object s, CancelEventArgs ev)
             {
                 if (!_verifyTheoryTimeFilePathValid(dialog.FileName, false))
                 {
@@ -586,7 +597,7 @@ namespace LiveSplit.UI.Components
 
                     var comparisonControl =
                         new ComparisonSettings(CurrentState, comparisonData.SplitsName, ComparisonsList)
-                            { Data = comparisonData };
+                        { Data = comparisonData };
                     comparisonControl.OnChange += comparisonSettings_OnChange;
                     ComparisonsList.Add(comparisonControl);
                 }
@@ -602,6 +613,7 @@ namespace LiveSplit.UI.Components
             finally
             {
                 ResetComparisons();
+                _showTheoryTimesFileSettings();
             }
         }
 
@@ -626,6 +638,8 @@ namespace LiveSplit.UI.Components
 
         private void btnUnload_Click(object sender, EventArgs e)
         {
+            _unlockFile();
+            LoadedFileContents = null;
             TheoryTimesFilePath = null;
             TheoryPBData = PBComparisonData.Default;
             ComparisonsList.Clear();
