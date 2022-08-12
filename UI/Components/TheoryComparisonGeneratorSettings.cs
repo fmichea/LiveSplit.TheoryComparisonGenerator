@@ -9,7 +9,6 @@ using System.Windows.Forms;
 using System.Xml;
 using LiveSplit.Model;
 using LiveSplit.TheoryComparisonGenerator.Comparisons;
-using LiveSplit.View;
 // FIXME:
 // - Lock file might not release clean every time. Think this has to do with unloading splits file, doesn't close the lock. Looks for wrong path.
 // - Text box not reset when saying no on save even tho it should load back from file. LoadedFileContents is the same as File contents
@@ -283,7 +282,7 @@ namespace LiveSplit.UI.Components
         private void TheoryComparisonGeneratorSettings_Load(object sender, EventArgs e)
         {
             Parent.CausesValidation = true;
-            Parent.Enter += _theoryComparisonGeneratorSettings_Enter;
+            ParentForm.Enter += _theoryComparisonGeneratorSettings_Enter;
             Parent.Leave += _theoryComparisonGeneratorSettings_Leave;
             ParentForm.FormClosing += _LayoutSettingsClosed;
             //_theoryComparisonGeneratorSettings_Enter(sender, e);
