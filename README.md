@@ -24,7 +24,7 @@ Add the LiveSplit.TheoryComparisonGenerator.dll file to your LiveSplit's Compone
 
 ## Adding comparisons
 On first open, your window should look like this.     
-![](https://i.imgur.com/trL5hlE.png)  
+![image](https://user-images.githubusercontent.com/92997613/185758090-be072cfd-b491-4be9-8e95-0173a364b2b3.png)
 
 The top checkmark box determines whether or not the component should automatically generate a "Theory PB" comparison. This comparison aims to be a better balanced pb comparison than LiveSplit's built in balanced comparison.  
 
