@@ -22,16 +22,9 @@ Add the LiveSplit.TheoryComparisonGenerator.dll file to your LiveSplit's Compone
 3. Go to Other and select Theory Comparison Generator
 4. Double click on the Theory Comparison Generator at the bottom of your layout editor's list of components
 
-## Creating/Loading a LiveSplit Theory Time File
-Before you can do anything, you must choose which Theory file you are saving your comparisons to. To create/select a .lstt (Live Split Theory Time) file, hit browse at the top of the menu. From here either choose an existing file, or type in a file name at the bottom and hit Open. This will create a .lsst file for you. This file stores all your settings and comparisions for the plugin, and you can use this file in other layouts so that you do not have to create mutliple identical comparisions for each layout that you may use.  
-
-![image](https://user-images.githubusercontent.com/92997613/182509222-8b44e332-ef76-42f0-a786-519a31038849.png)
-
-
 ## Adding comparisons
-After selecting your theory times file, your window should look like this.     
-
-![image](https://user-images.githubusercontent.com/92997613/182509396-905e4acb-7db6-4148-86df-f91cf359ba89.png)
+On first open, your window should look like this.     
+![](https://i.imgur.com/trL5hlE.png)  
 
 The top checkmark box determines whether or not the component should automatically generate a "Theory PB" comparison. This comparison aims to be a better balanced pb comparison than LiveSplit's built in balanced comparison.  
 
