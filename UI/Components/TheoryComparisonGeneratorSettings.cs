@@ -18,22 +18,38 @@ namespace LiveSplit.UI.Components
             InitializeComponent();
 
             CurrentState = state;
-            SplitsName = Path.GetFileNameWithoutExtension(CurrentState?.Run.FilePath);
             StartingSize = Size;
             StartingTableLayoutSize = tableComparisons.Size;
             ComparisonsList = new List<ComparisonSettings>();
             ShowAll = false;
-            TheoryPBData = new PBComparisonData(true, "");
-
+            TheoryPBData = PBComparisonData.Default;
         }
 
         public Size StartingSize { get; set; }
         public Size StartingTableLayoutSize { get; set; }
-        public LiveSplitState CurrentState { get; set; }
 
-        public PBComparisonData TheoryPBData { get; set; }
-
+        public LiveSplitState CurrentState
+        {
+            get { return _currentState; }
+            set
+            {
+                _currentState = value;
+                SplitsName = Path.GetFileNameWithoutExtension(value?.Run.FilePath);
+            }
+        }
+        private LiveSplitState _currentState { get; set; }
         public string SplitsName { get; set; }
+        public PBComparisonData TheoryPBData
+        {
+            get { return _theoryPBData; }
+            set
+            {
+                _theoryPBData = value; // Important to do this first so event callbacks do not loop.
+                _updateTheoryPBDataUI(value);
+            }
+        }
+        public PBComparisonData _theoryPBData { get; set; }
+
 
         public IList<ComparisonSettings> ComparisonsList { get; set; }
 
@@ -49,20 +65,23 @@ namespace LiveSplit.UI.Components
 
             TheoryPBData = new PBComparisonData(TheoryPBData)
             {
-                Enabled = SettingsHelper.ParseBool(element["AutoTheoryPB"]),
+                Enabled = element["AutoTheoryPB"] == null || SettingsHelper.ParseBool(element["AutoTheoryPB"]),
                 SecondaryName = SettingsHelper.ParseString(element["AutoTheoryDisplayName"])
             };
 
             var comparisonsElement = element["Comparisons"];
             ComparisonsList.Clear();
-            foreach (var child in comparisonsElement.ChildNodes)
+            if (comparisonsElement != null)
             {
-                var comparisonData = ComparisonData.FromXml((XmlNode)child);
+                foreach (var child in comparisonsElement.ChildNodes)
+                {
+                    var comparisonData = ComparisonData.FromXml((XmlNode)child);
 
-                var comparisonControl = new ComparisonSettings(CurrentState, comparisonData.SplitsName, ComparisonsList)
-                { Data = comparisonData };
-                comparisonControl.OnChange += comparisonSettings_OnChange;
-                ComparisonsList.Add(comparisonControl);
+                    var comparisonControl = new ComparisonSettings(CurrentState, comparisonData.SplitsName, ComparisonsList)
+                    { Data = comparisonData };
+                    comparisonControl.OnChange += comparisonSettings_OnChange;
+                    ComparisonsList.Add(comparisonControl);
+                }
             }
         }
 
@@ -199,9 +218,9 @@ namespace LiveSplit.UI.Components
 
         private void TheoryComparisonGeneratorSettings_Load(object sender, EventArgs e)
         {
-            SplitsName = Path.GetFileNameWithoutExtension(CurrentState?.Run.FilePath);
-            checkboxAutomaticPBComp.Checked = TheoryPBData.Enabled;
-            txtTheoryPBAltName.Text = TheoryPBData.SecondaryName;
+            _updateTheoryPBDataUI(TheoryPBData);
+            ShowAll = false;
+            btnShowAll.Text = "Show All";
             ResetComparisons();
         }
 
@@ -222,21 +241,45 @@ namespace LiveSplit.UI.Components
 
         private void checkboxAutomaticPBComp_CheckedChanged(object sender, EventArgs e)
         {
-            PBComparisonData prevData = TheoryPBData;
-            TheoryPBData = new PBComparisonData(TheoryPBData) { Enabled = checkboxAutomaticPBComp.Checked };
+            var newChecked = checkboxAutomaticPBComp.Checked;
+            if (newChecked == TheoryPBData.Enabled)
+                return;
+
+            var prevData = TheoryPBData;
+            TheoryPBData = new PBComparisonData(TheoryPBData) { Enabled = newChecked };
             OnChangePBComparison?.Invoke(this, new PBComparisonSettingsChangeEventArgs(prevData, TheoryPBData));
         }
 
         private void txtTheoryPBAltName_TextChanged(object sender, EventArgs e)
         {
-            PBComparisonData prevData = TheoryPBData;
-            TheoryPBData = new PBComparisonData(TheoryPBData) { SecondaryName = txtTheoryPBAltName.Text };
+            var newText = txtTheoryPBAltName.Text;
+            if (newText == TheoryPBData.SecondaryName)
+                return;
+
+            var prevData = TheoryPBData;
+            TheoryPBData = new PBComparisonData(TheoryPBData) { SecondaryName = newText };
             OnChangePBComparison?.Invoke(this, new PBComparisonSettingsChangeEventArgs(prevData, TheoryPBData));
         }
 
         private void comparisonSettings_OnChange(object sender, ComparisonSettingsChangeEventArgs e)
         {
             OnChangeComparison?.Invoke(this, e);
+        }
+
+        private delegate void _updateTheoryPBDataUIDelegate(PBComparisonData value);
+
+        private void _updateTheoryPBDataUI(PBComparisonData value)
+        {
+            if (InvokeRequired)
+            {
+                _updateTheoryPBDataUIDelegate d = new _updateTheoryPBDataUIDelegate(_updateTheoryPBDataUI);
+                Invoke(d, new object[] { value });
+            }
+            else
+            {
+                checkboxAutomaticPBComp.Checked = value.Enabled;
+                txtTheoryPBAltName.Text = value.SecondaryName;
+            }
         }
     }
 

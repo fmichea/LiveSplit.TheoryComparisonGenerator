@@ -24,13 +24,12 @@ Add the LiveSplit.TheoryComparisonGenerator.dll file to your LiveSplit's Compone
 
 ## Adding comparisons
 On first open, your window should look like this.     
-![](https://i.imgur.com/trL5hlE.png)  
+![image](https://user-images.githubusercontent.com/92997613/185758090-be072cfd-b491-4be9-8e95-0173a364b2b3.png)
 
 The top checkmark box determines whether or not the component should automatically generate a "Theory PB" comparison. This comparison aims to be a better balanced pb comparison than LiveSplit's built in balanced comparison.  
 
 In the empty box that says Theory Comparisons at the top, you can click the Add button to add a new Theory Comparison. This will create a new comparison entry that you can now edit with your desired time/name.  
-![image](https://user-images.githubusercontent.com/92997613/180613050-2ac3db8d-8665-4d51-9d48-935c5d75ff5a.png)
-
+![image](https://user-images.githubusercontent.com/92997613/185758206-4d7dfab3-a177-458c-805f-90e358283d2b.png)  
 The top field (Splits File) is not editable by typing in it. This takes your current splits file's name and automatically adds it to the comparison. Display Name and Goal Time are both editable. If you do not have a display name set, then the name your comparison will show in your layout would look something like Theory 20:00 (or whatever time you have set). Comparisons will only be generated if the "Goal Time" is entered in the right format (hh:mm:ss).  
 
 Once you have your comparison set, you can either add another comparison and move the orders of the comparisons around (this will affect the order the comparisons are showed when you cycle through them in LiveSplit) or you can exit the layout editor by hitting OK.
