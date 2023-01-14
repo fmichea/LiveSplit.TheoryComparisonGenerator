@@ -1,0 +1,10 @@
+﻿<updates>
+    <update version="1.0.0">
+        <files>
+            <file path="Components/LiveSplit.TheoryComparisonGenerator.dll" status="changed" />
+        </files>
+        <changelog>
+            <change>Initial Release.</change>
+        </changelog>
+    </update>
+</updates>

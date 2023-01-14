@@ -19,10 +19,10 @@ namespace LiveSplit.UI.Components
 
 		public string UpdateName => ComponentName;
 
-		public string UpdateURL => ""; // FIXME
+		public string UpdateURL => "https://raw.githubusercontent.com/thags15/LiveSplit.TheoryComparisonGenerator/main/";
+
+		public string XMLURL => "update.LiveSplit.TheoryComparisonGenerator.xml";
 
 		public Version Version => Version.Parse("1.0.0");
-
-		public string XMLURL => ""; // FIXME
 	}
 }
