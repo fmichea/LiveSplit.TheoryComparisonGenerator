@@ -67,6 +67,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include=".gitignore" />
+    <Content Include="Component\LiveSplit.TheoryComparisonGenerator.dll" />
+    <Content Include="update.LiveSplit.TheoryComparisonGenerator.xml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="UI\Components\ComparisonSettings.resx">
